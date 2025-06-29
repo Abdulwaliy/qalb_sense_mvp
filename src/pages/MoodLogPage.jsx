@@ -5,4 +5,4 @@ export default function MoodLogPage() {
       <p>[ Text Input + Emoji Picker Coming Soon ]</p>
     </div>
   );
-}
+}                    
