@@ -24,3 +24,11 @@ dist-ssr
 *.sw?
 
 .vercel
+
+# Ignore Firebase config
+src/services/firebase.js
+
+node_modules
+dist
+.env
+server/.env
