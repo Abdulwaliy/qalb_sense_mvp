@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Navigate, Route, Routes } from "react-router-dom";
 import { observeAuthState } from "./services/authService.js";
 import Auth from "./components/Auth.jsx";
-import TestMood from "./components/TestMood.jsx";
-import TestJournal from "./components/TestJournal.jsx";
+import LandingPage from "./components/LandingPage.jsx";
 import MoodHistory from "./components/MoodHistory.jsx";
 import JournalHistory from "./components/JournalHistory.jsx";
 import Dashboard from "./components/Dashboard.jsx";
@@ -19,24 +18,30 @@ function App() {
 
   return (
     <Router>
-    <div className="min-h-screen bg-gray-50 p-8">
-      <h1 className="text-3xl font-bold text-center mb-8">
-        QalbSense MVP
-      </h1>
-
-      <div className="max-w-xl mx-auto space-y-8">
-        <Auth user={user} />
-
-        {user && (
+      {user ? (
+        <div className="min-h-screen bg-gray-50 p-8">
+          <h1 className="mb-8 text-center text-3xl font-bold">QalbSense</h1>
+          <div className="mx-auto max-w-xl space-y-8">
+            <Auth user={user} />
             <Routes>
               <Route path="/" element={<Dashboard user={user} />} />
               <Route path="/mood-history" element={<MoodHistory user={user} />} />
               <Route path="/journal-history" element={<JournalHistory user={user} />} />
               <Route path="/reflection-history" element={<ReflectionHistory user={user} />} />
+              <Route path="/login" element={<Navigate to="/" replace />} />
+              <Route path="/signup" element={<Navigate to="/" replace />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
-          )}
+          </div>
         </div>
-      </div>
+      ) : (
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<Auth initialMode="login" />} />
+          <Route path="/signup" element={<Auth initialMode="signup" />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      )}
     </Router>
   );
 }

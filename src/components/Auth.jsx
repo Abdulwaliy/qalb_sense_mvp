@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { signUp, login, logout } from "../services/authService.js";
 
 /* ─────────────────────────────────────────
@@ -6,16 +7,16 @@ import { signUp, login, logout } from "../services/authService.js";
 ───────────────────────────────────────── */
 const IconEmail = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-    <rect x="2" y="4" width="12" height="9" rx="1.5" stroke="#6b9b80" strokeWidth="0.9" />
-    <path d="M2 5.5l6 4 6-4" stroke="#6b9b80" strokeWidth="0.9" strokeLinecap="round" />
+    <rect x="2" y="4" width="12" height="9" rx="1.5" stroke="#528469" strokeWidth="0.9" />
+    <path d="M2 5.5l6 4 6-4" stroke="#528469" strokeWidth="0.9" strokeLinecap="round" />
   </svg>
 );
 
 const IconLock = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-    <rect x="4" y="7" width="8" height="7" rx="1.5" stroke="#6b9b80" strokeWidth="0.9" />
-    <path d="M5.5 7V5a2.5 2.5 0 015 0v2" stroke="#6b9b80" strokeWidth="0.9" strokeLinecap="round" />
-    <circle cx="8" cy="10.5" r="1" fill="#6b9b80" />
+    <rect x="4" y="7" width="8" height="7" rx="1.5" stroke="#528469" strokeWidth="0.9" />
+    <path d="M5.5 7V5a2.5 2.5 0 015 0v2" stroke="#528469" strokeWidth="0.9" strokeLinecap="round" />
+    <circle cx="8" cy="10.5" r="1" fill="#528469" />
   </svg>
 );
 
@@ -23,13 +24,13 @@ const IconEye = ({ show }) => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
     {show ? (
       <>
-        <path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" stroke="#6b9b80" strokeWidth="0.9" />
-        <circle cx="8" cy="8" r="2" stroke="#6b9b80" strokeWidth="0.9" />
+        <path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" stroke="#528469" strokeWidth="0.9" />
+        <circle cx="8" cy="8" r="2" stroke="#528469" strokeWidth="0.9" />
       </>
     ) : (
       <>
-        <path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" stroke="#6b9b80" strokeWidth="0.9" />
-        <path d="M3 3l10 10" stroke="#6b9b80" strokeWidth="0.9" strokeLinecap="round" />
+        <path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" stroke="#528469" strokeWidth="0.9" />
+        <path d="M3 3l10 10" stroke="#528469" strokeWidth="0.9" strokeLinecap="round" />
       </>
     )}
   </svg>
@@ -37,8 +38,8 @@ const IconEye = ({ show }) => (
 
 const IconUser = () => (
   <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-    <circle cx="20" cy="16" r="7" stroke="#c9a346" strokeWidth="1" />
-    <path d="M6 36c0-7.732 6.268-14 14-14s14 6.268 14 14" stroke="#c9a346" strokeWidth="1" strokeLinecap="round" />
+    <circle cx="20" cy="16" r="7" stroke="#528469" strokeWidth="1" />
+    <path d="M6 36c0-7.732 6.268-14 14-14s14 6.268 14 14" stroke="#528469" strokeWidth="1" strokeLinecap="round" />
   </svg>
 );
 
@@ -50,12 +51,13 @@ function Field({ icon, label, type = "text", value, onChange, placeholder, right
     <div style={{ marginBottom: 16 }}>
       <label style={{
         display: "block",
-        fontFamily: "'Cormorant Garamond', serif",
-        fontSize: 12,
-        letterSpacing: "0.18em",
+        fontFamily: "'DM Sans', sans-serif",
+        fontSize: 10,
+        fontWeight: 700,
+        letterSpacing: "0.14em",
         textTransform: "uppercase",
-        color: "#c9a346",
-        marginBottom: 8,
+        color: "#397852",
+        marginBottom: 7,
       }}>
         {label}
       </label>
@@ -92,8 +94,8 @@ function Field({ icon, label, type = "text", value, onChange, placeholder, right
 ───────────────────────────────────────── */
 function Toast({ message, type, visible }) {
   const colors = {
-    success: { bg: "rgba(15,34,25,0.95)", border: "#c9a346", text: "#e8c97a" },
-    error:   { bg: "rgba(40,10,10,0.95)", border: "#c0392b", text: "#f1948a" },
+    success: { bg: "rgba(255,255,255,0.98)", border: "#b7d3bd", text: "#28583a" },
+    error:   { bg: "rgba(255,255,255,0.98)", border: "#e5b4ac", text: "#9d4034" },
   };
   const c = colors[type] || colors.success;
   return (
@@ -165,8 +167,8 @@ function LoggedIn({ user }) {
 /* ─────────────────────────────────────────
    MAIN AUTH
 ───────────────────────────────────────── */
-export default function Auth({ user }) {
-  const [mode, setMode]             = useState("login");   // "login" | "signup"
+export default function Auth({ user, initialMode = "login" }) {
+  const [mode, setMode]             = useState(initialMode);   // "login" | "signup"
   const [email, setEmail]           = useState("");
   const [password, setPassword]     = useState("");
   const [showPass, setShowPass]     = useState(false);
@@ -201,7 +203,7 @@ export default function Auth({ user }) {
   if (user) return (
     <>
       <style>{STYLES}</style>
-      <div className="qalb-auth-root">
+      <div className="qalb-auth-root qalb-auth-root-signed-in">
         <div className="qalb-bg-pattern" />
         <div className="qalb-glow" />
         <LoggedIn user={user} />
@@ -216,6 +218,7 @@ export default function Auth({ user }) {
       <div className="qalb-auth-root">
         <div className="qalb-bg-pattern" />
         <div className="qalb-glow" />
+        <Link className="qalb-auth-home" to="/">← Back to QalbSense</Link>
 
         <Toast message={toast.message} type={toast.type} visible={toast.visible} />
 
@@ -225,14 +228,14 @@ export default function Auth({ user }) {
           <header className="qalb-auth-header">
             {/* Crescent + star */}
             <svg width="52" height="52" viewBox="0 0 52 52" className="qalb-auth-emblem">
-              <path d="M26 6C15.5 6 7 14.5 7 25s8.5 19 19 19c-5.5 0-9-4.5-9-10 0-8 5.5-13.5 9-15-4.5-1.5-8.5-.5-12 2C16 12 21 6 26 6z" fill="#c9a346" opacity="0.9" />
-              <circle cx="33" cy="12" r="2.5" fill="#c9a346" opacity="0.7" />
-              <polygon points="38,18 39.5,22.5 44,22.5 40.5,25 42,29.5 38,27 34,29.5 35.5,25 32,22.5 36.5,22.5" fill="#c9a346" opacity="0.5" transform="scale(0.7) translate(17,8)" />
+              <path d="M26 6C15.5 6 7 14.5 7 25s8.5 19 19 19c-5.5 0-9-4.5-9-10 0-8 5.5-13.5 9-15-4.5-1.5-8.5-.5-12 2C16 12 21 6 26 6z" fill="#39805a" opacity="0.9" />
+              <circle cx="33" cy="12" r="2.5" fill="#39805a" opacity="0.7" />
+              <polygon points="38,18 39.5,22.5 44,22.5 40.5,25 42,29.5 38,27 34,29.5 35.5,25 32,22.5 36.5,22.5" fill="#39805a" opacity="0.5" transform="scale(0.7) translate(17,8)" />
             </svg>
 
             <div className="qalb-auth-rule-row">
               <div className="qalb-rule" />
-              <span className="qalb-auth-app-label">Qalb</span>
+              <span className="qalb-auth-app-label">QalbSense</span>
               <div className="qalb-rule" />
             </div>
 
@@ -340,38 +343,65 @@ export default function Auth({ user }) {
    STYLES
 ───────────────────────────────────────── */
 const STYLES = `
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Lora:ital,wght@0,400;0,500;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 .qalb-auth-root {
-  background: #0a1a13;
+  background: #f5f7f0;
   min-height: 100vh;
-  color: #f0e6cc;
-  font-family: 'Lora', serif;
+  color: #1d3129;
+  font-family: 'DM Sans', sans-serif;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 32px 20px;
+  padding: 84px 20px 36px;
   position: relative;
-  overflow: hidden;
+  overflow: auto;
 }
 
+.qalb-auth-root-signed-in {
+  background: #0a1a13;
+  color: #f0e6cc;
+  font-family: 'Lora', serif;
+  overflow: hidden;
+  padding: 32px 20px;
+}
+
+.qalb-auth-home {
+  position: absolute;
+  z-index: 2;
+  top: 24px;
+  left: 28px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 15px;
+  border: 1px solid #e0e9df;
+  border-radius: 999px;
+  background: rgba(255,255,252,0.8);
+  color: #42644e;
+  font-size: 12px;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.qalb-auth-home:hover { color: #167754; }
+
 .qalb-bg-pattern {
-  position: fixed; inset: 0; pointer-events: none; opacity: 0.035;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cg fill='none' stroke='%23c9a346' stroke-width='0.8'%3E%3Cpolygon points='40,4 47,18 62,18 51,27 55,42 40,33 25,42 29,27 18,18 33,18'/%3E%3Crect x='10' y='10' width='60' height='60' transform='rotate(45 40 40)'/%3E%3Ccircle cx='40' cy='40' r='25'/%3E%3C/g%3E%3C/svg%3E");
+  position: fixed; inset: 0; pointer-events: none; opacity: 0.1;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cg fill='none' stroke='%2339805a' stroke-width='0.7'%3E%3Cpolygon points='40,4 47,18 62,18 51,27 55,42 40,33 25,42 29,27 18,18 33,18'/%3E%3Crect x='10' y='10' width='60' height='60' transform='rotate(45 40 40)'/%3E%3Ccircle cx='40' cy='40' r='25'/%3E%3C/g%3E%3C/svg%3E");
   background-size: 80px 80px;
 }
 
 .qalb-glow {
   position: fixed; top: -220px; left: 50%; transform: translateX(-50%);
   width: 700px; height: 440px;
-  background: radial-gradient(ellipse, rgba(20,80,45,0.5) 0%, transparent 70%);
+  background: radial-gradient(ellipse, rgba(188,220,188,0.44) 0%, transparent 70%);
   pointer-events: none;
 }
 
 .qalb-auth-wrap {
-  width: 100%; max-width: 400px;
+  width: 100%; max-width: 420px;
   position: relative; z-index: 1;
   animation: authFadeIn 0.8s ease both;
 }
@@ -379,109 +409,115 @@ const STYLES = `
 /* Header */
 .qalb-auth-header {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: 25px;
 }
 .qalb-auth-emblem {
-  margin-bottom: 20px;
+  display: block;
+  width: 42px;
+  height: 42px;
+  margin: 0 auto 13px;
   animation: shimmer 3s ease-in-out infinite;
 }
 .qalb-auth-rule-row {
   display: flex; align-items: center; gap: 12px;
-  margin-bottom: 20px;
+  margin-bottom: 14px;
 }
 .qalb-auth-app-label {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 13px; letter-spacing: 0.35em;
-  text-transform: uppercase; color: #c9a346;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.2em;
+  text-transform: uppercase; color: #167754;
   white-space: nowrap;
 }
 .qalb-rule {
   flex: 1; height: 0.5px;
-  background: linear-gradient(90deg, transparent, rgba(180,140,60,0.3), transparent);
+  background: linear-gradient(90deg, transparent, rgba(61,126,82,0.22), transparent);
 }
 .qalb-auth-title {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 34px; font-weight: 300;
-  color: #f0e6cc; line-height: 1.2;
-  margin-bottom: 8px;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 36px; font-weight: 500;
+  color: #1d3129; line-height: 1.2;
+  margin-bottom: 9px;
 }
 .qalb-auth-subtitle {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 15px; font-style: italic;
-  color: rgba(240,230,204,0.55); font-weight: 300;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: #78877c; font-weight: 400;
 }
 
 /* Tabs */
 .qalb-auth-tabs {
   display: flex;
-  border: 0.5px solid rgba(180,140,60,0.22);
-  border-radius: 14px;
-  background: rgba(255,255,255,0.03);
+  border: 1px solid #e3ebe1;
+  border-radius: 13px;
+  background: rgba(233,240,231,0.64);
   padding: 4px;
-  margin-bottom: 28px;
+  margin-bottom: 17px;
   gap: 4px;
 }
 .qalb-tab {
   flex: 1; padding: 10px 0;
-  border-radius: 10px; border: none;
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 15px; letter-spacing: 0.05em;
+  border-radius: 9px; border: 1px solid transparent;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px; font-weight: 600;
   cursor: pointer; transition: all 0.25s;
-  background: transparent; color: rgba(240,230,204,0.45);
+  background: transparent; color: #78877c;
 }
 .qalb-tab.active {
-  background: rgba(201,163,70,0.16);
-  color: #e8c97a;
-  border: 0.5px solid rgba(180,140,60,0.35);
+  background: #fffefa;
+  color: #167754;
+  border-color: #e2eae0;
+  box-shadow: 0 2px 6px rgba(34,70,44,0.06);
 }
 .qalb-tab:not(.active):hover {
-  color: rgba(240,230,204,0.75);
-  background: rgba(255,255,255,0.04);
+  color: #42644e;
+  background: rgba(255,255,255,0.58);
 }
 
 /* Form card */
 .qalb-auth-form {
-  background: rgba(255,255,255,0.035);
-  border: 0.5px solid rgba(180,140,60,0.2);
-  border-radius: 20px;
-  padding: 28px 24px;
-  backdrop-filter: blur(8px);
+  background: #fffefa;
+  border: 1px solid #e4ebe1;
+  border-radius: 18px;
+  padding: 25px 24px 23px;
+  box-shadow: 0 18px 48px rgba(42,78,51,0.08);
   margin-bottom: 20px;
 }
 
 /* Input */
 .qalb-auth-input {
   width: 100%; height: 48px;
-  background: rgba(0,0,0,0.25);
-  border: 0.5px solid rgba(180,140,60,0.22);
-  border-radius: 12px;
-  color: #f0e6cc;
-  font-family: 'Lora', serif;
-  font-size: 14.5px;
+  background: #fcfcf8;
+  border: 1px solid #e4ebe1;
+  border-radius: 11px;
+  color: #263d30;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
   outline: none;
-  transition: border-color 0.2s, background 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
 }
-.qalb-auth-input::placeholder { color: rgba(107,155,128,0.5); font-style: italic; }
+.qalb-auth-input::placeholder { color: #a0aca2; }
 .qalb-auth-input:focus {
-  border-color: rgba(201,163,70,0.5);
-  background: rgba(0,0,0,0.35);
+  border-color: #8db69a;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(84,145,101,0.1);
 }
 
 /* Primary button */
 .qalb-auth-btn-primary {
   width: 100%; height: 50px;
-  border-radius: 14px; border: none;
-  background: linear-gradient(135deg, #b8892e, #d4a84b);
-  color: #1a0e00;
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 16px; font-weight: 600; letter-spacing: 0.1em;
+  border-radius: 12px; border: none;
+  background: #167754;
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.02em;
   cursor: pointer; transition: all 0.25s;
-  box-shadow: 0 4px 24px rgba(201,163,70,0.28);
-  margin-top: 8px; margin-bottom: 20px;
+  box-shadow: 0 7px 16px rgba(22,119,84,0.16);
+  margin-top: 7px; margin-bottom: 18px;
 }
 .qalb-auth-btn-primary:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 6px 30px rgba(201,163,70,0.4);
+  background: #0c6347;
+  box-shadow: 0 9px 20px rgba(22,119,84,0.22);
 }
 .qalb-auth-btn-primary:active:not(:disabled) { transform: translateY(0); }
 .qalb-auth-btn-primary:disabled { opacity: 0.6; cursor: default; }
@@ -489,45 +525,45 @@ const STYLES = `
 /* Divider */
 .qalb-auth-divider {
   display: flex; align-items: center; gap: 12px;
-  margin-bottom: 20px;
+  margin-bottom: 17px;
 }
 .qalb-auth-divider-text {
-  font-size: 12px; letter-spacing: 0.12em;
-  color: rgba(107,155,128,0.6);
+  font-size: 10px; letter-spacing: 0.12em;
+  color: #95a397;
   text-transform: uppercase;
   white-space: nowrap;
 }
 
 /* Mode switch */
 .qalb-auth-switch {
-  text-align: center; font-size: 13.5px;
-  color: rgba(240,230,204,0.45);
-  font-family: 'Lora', serif;
+  text-align: center; font-size: 11px;
+  color: #849087;
+  font-family: 'DM Sans', sans-serif;
 }
 .qalb-auth-switch-link {
-  color: #c9a346; cursor: pointer;
+  color: #167754; cursor: pointer;
   text-decoration: underline; text-underline-offset: 3px;
   transition: color 0.2s;
 }
-.qalb-auth-switch-link:hover { color: #e8c97a; }
+.qalb-auth-switch-link:hover { color: #0c533c; }
 
 /* Footer ayah */
 .qalb-auth-footer {
   display: flex; align-items: center; justify-content: center; gap: 12px;
-  margin-bottom: 8px;
+  margin-bottom: 7px;
 }
 .qalb-auth-ayah {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 17px; font-weight: 300;
-  color: rgba(201,163,70,0.7);
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 16px; font-weight: 500;
+  color: #548267;
   letter-spacing: 0.04em; direction: rtl;
   white-space: nowrap;
 }
 .qalb-auth-ayah-trans {
   text-align: center;
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 12px; font-style: italic;
-  color: rgba(107,155,128,0.55);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  color: #849488;
   letter-spacing: 0.04em;
 }
 
@@ -539,5 +575,12 @@ const STYLES = `
 @keyframes shimmer {
   0%,100% { opacity: 0.8; }
   50%      { opacity: 1; }
+}
+
+@media (max-width: 520px) {
+  .qalb-auth-root { padding: 76px 17px 28px; }
+  .qalb-auth-home { top: 16px; left: 17px; min-height: 34px; }
+  .qalb-auth-title { font-size: 32px; }
+  .qalb-auth-form { padding: 22px 19px 20px; }
 }
 `;
