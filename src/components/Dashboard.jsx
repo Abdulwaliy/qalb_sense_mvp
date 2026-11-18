@@ -19,15 +19,6 @@ const MOOD_OPTIONS = [
   { emoji: "😴", label: "Tired" },
 ];
 
-const PRAYER_TIMES = [
-  { name: "Fajr",    time: "5:14" },
-  { name: "Dhuhr",   time: "12:58" },
-  { name: "Asr",     time: "16:32" },
-  { name: "Maghrib", time: "18:47" },
-  { name: "Isha",    time: "20:15" },
-];
-const NEXT_PRAYER = "Asr";
-
 const DAYS   = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
@@ -268,17 +259,6 @@ export default function Dashboard({ user }) {
         .qalb-crescent-row { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 16px; }
         .qalb-crescent { opacity: 0.9; }
 
-        /* Prayer strip */
-        .qalb-prayer-strip { display: flex; overflow-x: auto; gap: 8px; padding: 0 20px; scrollbar-width: none; margin-bottom: 8px; animation: fadeSlide 0.7s 0.12s ease both; opacity: 0; animation-fill-mode: forwards; }
-        .qalb-prayer-strip::-webkit-scrollbar { display: none; }
-        .qalb-prayer-pill { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 9px 13px; border-radius: 14px; border: 1px solid #e2e9df; background: #ffffff; box-shadow: 0 2px 6px rgba(29, 49, 41, 0.02); }
-        .qalb-prayer-pill.next { background: #eef6f0; border-color: #167754; box-shadow: 0 4px 12px rgba(22, 119, 84, 0.08); }
-        .qalb-prayer-name { font-size: 11px; font-weight: 500; color: #718276; }
-        .qalb-prayer-time { font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 600; color: #1d3129; }
-        .qalb-prayer-pill.next .qalb-prayer-name { color: #167754; font-weight: 600; }
-        .qalb-prayer-pill.next .qalb-prayer-time { color: #0c533c; }
-        .qalb-next-label { font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: #167754; font-weight: 700; }
-
         /* Mood */
         .qalb-mood-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 14px 20px 20px; }
         .qalb-mood-btn { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 12px 8px; border-radius: 14px; border: 1px solid #e2e9df; background: #fbfcf9; cursor: pointer; transition: all 0.22s; color: #586b61; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; }
@@ -365,17 +345,6 @@ export default function Dashboard({ user }) {
               {dateLabel}
             </div>
           </header>
-
-          {/* ── PRAYER TIMES ── */}
-          <div className="qalb-prayer-strip">
-            {PRAYER_TIMES.map(p => (
-              <div key={p.name} className={`qalb-prayer-pill${p.name === NEXT_PRAYER ? " next" : ""}`}>
-                <span className="qalb-prayer-name">{p.name}</span>
-                <span className="qalb-prayer-time">{p.time}</span>
-                {p.name === NEXT_PRAYER && <span className="qalb-next-label">Next</span>}
-              </div>
-            ))}
-          </div>
 
           {/* ── MOOD ── */}
           <div className="qalb-section-1" style={{ margin: "18px 20px 0", border: "1px solid #e2e9df", borderRadius: 20, background: "#ffffff", boxShadow: "0 4px 20px rgba(29, 49, 41, 0.04)", overflow: "hidden" }}>
