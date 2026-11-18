@@ -1,17 +1,19 @@
 import { useEffect, useState } from "react";
 import { getUserMoods } from "../services/moodService.js";
 import { Link, useLocation } from "react-router-dom";
+import { logout } from "../services/authService.js";
+import { getLandingUrl } from "../utils/domain.js";
 
 /* ─────────────────────────────────────────
    MOOD CONFIG
 ───────────────────────────────────────── */
 const MOOD_META = {
-  Happy:   { emoji: "😄", color: "#d4a84b", bg: "rgba(212,168,75,0.12)",  border: "rgba(212,168,75,0.35)",  label: "Happy"   },
-  Sad:     { emoji: "😢", color: "#5b8dd9", bg: "rgba(91,141,217,0.1)",   border: "rgba(91,141,217,0.3)",   label: "Sad"     },
-  Angry:   { emoji: "😡", color: "#c0392b", bg: "rgba(192,57,43,0.1)",    border: "rgba(192,57,43,0.3)",    label: "Angry"   },
-  Anxious: { emoji: "😰", color: "#8e6bbf", bg: "rgba(142,107,191,0.1)",  border: "rgba(142,107,191,0.3)",  label: "Anxious" },
-  Calm:    { emoji: "😌", color: "#3a9e78", bg: "rgba(58,158,120,0.1)",   border: "rgba(58,158,120,0.3)",   label: "Calm"    },
-  Tired:   { emoji: "😴", color: "#7a8a8e", bg: "rgba(122,138,142,0.1)",  border: "rgba(122,138,142,0.3)",  label: "Tired"   },
+  Happy:   { emoji: "😄", color: "#b8871b", bg: "#fdf8ec", border: "#f3e1b7", label: "Happy"   },
+  Sad:     { emoji: "😢", color: "#326eb8", bg: "#eff5fc", border: "#c8ddf4", label: "Sad"     },
+  Angry:   { emoji: "😡", color: "#c0392b", bg: "#fdf2f0", border: "#f5c6cb", label: "Angry"   },
+  Anxious: { emoji: "😰", color: "#774eb0", bg: "#f6f1fc", border: "#dacaf0", label: "Anxious" },
+  Calm:    { emoji: "😌", color: "#167754", bg: "#eef6f0", border: "#c0decb", label: "Calm"    },
+  Tired:   { emoji: "😴", color: "#617378", bg: "#f2f5f6", border: "#d4dee0", label: "Tired"   },
 };
 const ALL_MOODS = Object.keys(MOOD_META);
 
@@ -38,10 +40,28 @@ const monthKey = (secs) => {
 /* ─────────────────────────────────────────
    NAV ICONS
 ───────────────────────────────────────── */
-const NavHome    = ({ a }) => <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2L3 8v10h5v-5h4v5h5V8L10 2z" stroke={a?"#c9a346":"#e8c97a"} strokeWidth="1" strokeLinejoin="round"/></svg>;
-const NavMood    = ({ a }) => <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="8" r="5" stroke={a?"#c9a346":"#e8c97a"} strokeWidth="1"/><path d="M10 13v5M7 16h6" stroke={a?"#c9a346":"#e8c97a"} strokeWidth="1" strokeLinecap="round"/></svg>;
-const NavJournal = ({ a }) => <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="4" y="3" width="12" height="14" rx="2" stroke={a?"#c9a346":"#e8c97a"} strokeWidth="1"/><path d="M7 8h6M7 11h4" stroke={a?"#c9a346":"#e8c97a"} strokeWidth="1" strokeLinecap="round"/></svg>;
-const NavReflect = ({ a }) => <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><polygon points="10,2 12,7.5 18,7.5 13.5,11.5 15.5,17 10,13 4.5,17 6.5,11.5 2,7.5 8,7.5" stroke={a?"#c9a346":"#e8c97a"} strokeWidth="1" strokeLinejoin="round"/></svg>;
+const NavHome = ({ a }) => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <path d="M10 2L3 8v10h5v-5h4v5h5V8L10 2z" stroke={a ? "#167754" : "#718276"} strokeWidth="1.4" strokeLinejoin="round" />
+  </svg>
+);
+const NavMood = ({ a }) => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <circle cx="10" cy="8" r="5" stroke={a ? "#167754" : "#718276"} strokeWidth="1.4" />
+    <path d="M10 13v5M7 16h6" stroke={a ? "#167754" : "#718276"} strokeWidth="1.4" strokeLinecap="round" />
+  </svg>
+);
+const NavJournal = ({ a }) => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <rect x="4" y="3" width="12" height="14" rx="2" stroke={a ? "#167754" : "#718276"} strokeWidth="1.4" />
+    <path d="M7 8h6M7 11h4" stroke={a ? "#167754" : "#718276"} strokeWidth="1.4" strokeLinecap="round" />
+  </svg>
+);
+const NavReflect = ({ a }) => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <polygon points="10,2 12,7.5 18,7.5 13.5,11.5 15.5,17 10,13 4.5,17 6.5,11.5 2,7.5 8,7.5" stroke={a ? "#167754" : "#718276"} strokeWidth="1.4" strokeLinejoin="round" />
+  </svg>
+);
 
 /* ─────────────────────────────────────────
    MOOD DONUT CHART (SVG)
@@ -73,7 +93,7 @@ function MoodDonut({ moods }) {
   return (
     <div className="qalb-donut-wrap">
       <svg width="140" height="140" viewBox="0 0 140 140">
-        <circle cx={cx} cy={cy} r={R} fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth={stroke} />
+        <circle cx={cx} cy={cy} r={R} fill="none" stroke="#edf1ea" strokeWidth={stroke} />
         {slices.map(s => (
           <circle
             key={s.m} cx={cx} cy={cy} r={R} fill="none"
@@ -85,7 +105,7 @@ function MoodDonut({ moods }) {
           />
         ))}
         <text x={cx} y={cy - 8} textAnchor="middle" fontSize="22" dominantBaseline="middle">{meta.emoji}</text>
-        <text x={cx} y={cy + 14} textAnchor="middle" fontSize="10" fill="rgba(240,230,204,0.5)" fontFamily="Lora,serif" letterSpacing="0.08em">{meta.label}</text>
+        <text x={cx} y={cy + 14} textAnchor="middle" fontSize="10" fill="#718276" fontFamily="'DM Sans', sans-serif" fontWeight="500" letterSpacing="0.04em">{meta.label}</text>
       </svg>
 
       <div className="qalb-donut-legend">
@@ -108,22 +128,21 @@ function MoodDonut({ moods }) {
    MOOD CARD
 ───────────────────────────────────────── */
 function MoodCard({ entry, index }) {
-  const meta = MOOD_META[entry.mood] || { emoji: entry.note || "🙂", color: "#c9a346", bg: "rgba(201,163,70,0.1)", border: "rgba(201,163,70,0.25)", label: entry.mood };
+  const meta = MOOD_META[entry.mood] || { emoji: entry.note || "🙂", color: "#167754", bg: "#eef6f0", border: "#c0decb", label: entry.mood };
   const { date, time } = fmt(entry.timestamp?.seconds);
 
   return (
     <div
       className="qalb-mood-card"
       style={{
-        borderColor: meta.border,
-        animationDelay: `${index * 0.06}s`,
+        animationDelay: `${index * 0.05}s`,
       }}
     >
       {/* Left accent bar */}
       <div className="qalb-mood-accent" style={{ background: meta.color }} />
 
       {/* Emoji bubble */}
-      <div className="qalb-mood-bubble" style={{ background: meta.bg, border: `0.5px solid ${meta.border}` }}>
+      <div className="qalb-mood-bubble" style={{ background: meta.bg, border: `1px solid ${meta.border}` }}>
         <span className="qalb-mood-emoji">{meta.emoji}</span>
       </div>
 
@@ -131,9 +150,9 @@ function MoodCard({ entry, index }) {
       <div className="qalb-mood-body">
         <span className="qalb-mood-name" style={{ color: meta.color }}>{meta.label}</span>
         <div className="qalb-mood-time-row">
-          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-            <circle cx="5" cy="5" r="4" stroke="rgba(107,155,128,0.6)" strokeWidth="0.8"/>
-            <path d="M5 3v2l1.2 1" stroke="rgba(107,155,128,0.6)" strokeWidth="0.8" strokeLinecap="round"/>
+          <svg width="11" height="11" viewBox="0 0 10 10" fill="none">
+            <circle cx="5" cy="5" r="4" stroke="#718276" strokeWidth="0.9"/>
+            <path d="M5 3v2l1.2 1" stroke="#718276" strokeWidth="0.9" strokeLinecap="round"/>
           </svg>
           <span className="qalb-mood-date">{date}</span>
           {time && <span className="qalb-mood-time-badge">{time}</span>}
@@ -150,7 +169,7 @@ export default function MoodHistory({ user }) {
   const location = useLocation();
   const [moods, setMoods]     = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter]   = useState("All"); // "All" | mood label
+  const [filter, setFilter]   = useState("All");
 
   useEffect(() => {
     if (!user) return;
@@ -189,13 +208,26 @@ export default function MoodHistory({ user }) {
 
         <div className="qalb-app">
 
+          {/* ── TOP UTILITY BAR ── */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 20px 0" }}>
+            <a href={getLandingUrl()} style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#167754", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 6 }}>
+              ← QalbSense Home
+            </a>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              {user?.email && <span style={{ fontSize: 11, color: "#718276", letterSpacing: "0.02em" }}>{user.email.split("@")[0]}</span>}
+              <button onClick={logout} style={{ background: "#ffffff", border: "1px solid #d5e0d5", borderRadius: 999, padding: "5px 12px", fontSize: 10.5, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: "#586b61", cursor: "pointer", transition: "all 0.2s" }} onMouseEnter={e => e.target.style.borderColor = "#c0392b"} onMouseLeave={e => e.target.style.borderColor = "#d5e0d5"}>
+                Sign out
+              </button>
+            </div>
+          </div>
+
           {/* ── HEADER ── */}
           <header className="qalb-mh-header">
             <div className="qalb-rule-row">
               <div className="qalb-rule" />
-              <svg width="28" height="28" viewBox="0 0 28 28" className="qalb-crescent">
-                <path d="M14 3C8.5 3 4 7.5 4 13s4.5 10 10 10c-3 0-5-2.5-5-5.5 0-4.5 3-7.5 5-8.5C11.5 8 9 9 7 11 8.5 5.5 11 3 14 3z" fill="#c9a346" opacity="0.85"/>
-                <circle cx="19" cy="6" r="1.5" fill="#c9a346" opacity="0.7"/>
+              <svg width="24" height="24" viewBox="0 0 28 28" className="qalb-crescent">
+                <path d="M14 3C8.5 3 4 7.5 4 13s4.5 10 10 10c-3 0-5-2.5-5-5.5 0-4.5 3-7.5 5-8.5C11.5 8 9 9 7 11 8.5 5.5 11 3 14 3z" fill="#167754" opacity="0.9"/>
+                <circle cx="19" cy="6" r="1.5" fill="#a48a49" opacity="0.8"/>
               </svg>
               <div className="qalb-rule" />
             </div>
@@ -249,7 +281,7 @@ export default function MoodHistory({ user }) {
           {/* ── EMPTY ── */}
           {!loading && visible.length === 0 && (
             <div className="qalb-empty">
-              <span style={{ fontSize: 48 }}>{filter !== "All" ? MOOD_META[filter]?.emoji : "🌙"}</span>
+              <span style={{ fontSize: 44 }}>{filter !== "All" ? MOOD_META[filter]?.emoji : "🌙"}</span>
               <p className="qalb-empty-title">
                 {filter !== "All" ? `No "${filter}" entries yet` : "No moods logged yet"}
               </p>
@@ -301,107 +333,138 @@ export default function MoodHistory({ user }) {
    STYLES
 ───────────────────────────────────────── */
 const STYLES = `
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Lora:ital,wght@0,400;0,500;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap');
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-.qalb-root { background: #0a1a13; min-height: 100vh; color: #f0e6cc; font-family: 'Lora', serif; overflow-x: hidden; }
+.qalb-root {
+  background: #f5f7f0;
+  min-height: 100vh;
+  color: #1d3129;
+  font-family: 'DM Sans', sans-serif;
+  overflow-x: hidden;
+}
 
 .qalb-bg-pattern {
-  position: fixed; inset: 0; pointer-events: none; opacity: 0.035;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cg fill='none' stroke='%23c9a346' stroke-width='0.8'%3E%3Cpolygon points='40,4 47,18 62,18 51,27 55,42 40,33 25,42 29,27 18,18 33,18'/%3E%3Crect x='10' y='10' width='60' height='60' transform='rotate(45 40 40)'/%3E%3Ccircle cx='40' cy='40' r='25'/%3E%3C/g%3E%3C/svg%3E");
+  position: fixed; inset: 0; pointer-events: none; opacity: 0.028;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cg fill='none' stroke='%23167754' stroke-width='0.9'%3E%3Cpolygon points='40,4 47,18 62,18 51,27 55,42 40,33 25,42 29,27 18,18 33,18'/%3E%3Crect x='10' y='10' width='60' height='60' transform='rotate(45 40 40)'/%3E%3Ccircle cx='40' cy='40' r='25'/%3E%3C/g%3E%3C/svg%3E");
   background-size: 80px 80px;
 }
-.qalb-glow { position: fixed; top: -200px; left: 50%; transform: translateX(-50%); width: 700px; height: 400px; background: radial-gradient(ellipse, rgba(20,80,45,0.5) 0%, transparent 70%); pointer-events: none; }
+.qalb-glow {
+  position: fixed; top: -180px; left: 50%; transform: translateX(-50%);
+  width: 700px; height: 380px;
+  background: radial-gradient(ellipse, rgba(22, 119, 84, 0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
 
-.qalb-app { max-width: 480px; margin: 0 auto; padding: 0 0 110px; position: relative; z-index: 1; }
+.qalb-app { max-width: 480px; margin: 0 auto; padding: 0 0 100px; position: relative; z-index: 1; }
 
 /* Header */
-.qalb-mh-header { text-align: center; padding: 48px 24px 24px; animation: fadeSlide 0.7s ease both; }
-.qalb-rule-row { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
-.qalb-rule { flex: 1; height: 0.5px; background: linear-gradient(90deg, transparent, rgba(180,140,60,0.3), transparent); }
+.qalb-mh-header { text-align: center; padding: 36px 24px 24px; animation: fadeSlide 0.7s ease both; }
+.qalb-rule-row { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+.qalb-rule { flex: 1; height: 1px; background: linear-gradient(90deg, transparent, #d8e2d5, transparent); }
 .qalb-crescent { animation: shimmer 3s ease-in-out infinite; }
-.qalb-mh-eyebrow { font-family: 'Cormorant Garamond', serif; font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase; color: #c9a346; margin-bottom: 6px; }
-.qalb-mh-title { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: #f0e6cc; margin-bottom: 6px; }
-.qalb-mh-subtitle { font-family: 'Cormorant Garamond', serif; font-size: 14px; font-style: italic; color: rgba(107,155,128,0.8); }
+.qalb-mh-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: #167754; margin-bottom: 8px; }
+.qalb-mh-title { font-family: 'Playfair Display', Georgia, serif; font-size: 36px; font-weight: 600; color: #1d3129; line-height: 1.15; margin-bottom: 6px; letter-spacing: -0.02em; }
+.qalb-mh-subtitle { font-family: 'Playfair Display', Georgia, serif; font-size: 15px; font-style: italic; color: #586b61; font-weight: 400; }
 
 /* Chart card */
 .qalb-chart-card {
   position: relative; overflow: hidden;
   margin: 8px 20px 0;
-  background: rgba(255,255,255,0.035);
-  border: 0.5px solid rgba(180,140,60,0.2);
+  background: #ffffff;
+  border: 1px solid #e2e9df;
   border-radius: 20px;
   padding: 20px 20px 18px;
-  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 20px rgba(29, 49, 41, 0.04);
   animation: fadeSlide 0.7s 0.1s ease both; opacity: 0; animation-fill-mode: forwards;
 }
-.qalb-card-top-rule { position: absolute; top: 0; left: 20%; right: 20%; height: 1px; background: linear-gradient(90deg, transparent, rgba(201,163,70,0.5), transparent); }
-.qalb-chart-title { font-family: 'Cormorant Garamond', serif; font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; color: #c9a346; margin-bottom: 16px; }
+.qalb-card-top-rule { position: absolute; top: 0; left: 15%; right: 15%; height: 2px; background: linear-gradient(90deg, transparent, #a48a49, transparent); }
+.qalb-chart-title { font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #167754; margin-bottom: 16px; }
 
 /* Donut */
 .qalb-donut-wrap { display: flex; align-items: center; gap: 20px; }
 .qalb-donut-legend { flex: 1; display: flex; flex-direction: column; gap: 8px; }
 .qalb-legend-row { display: flex; align-items: center; gap: 7px; }
 .qalb-legend-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-.qalb-legend-name { font-size: 12px; color: rgba(240,230,204,0.65); font-family: 'Lora', serif; min-width: 52px; }
-.qalb-legend-count { font-family: 'Cormorant Garamond', serif; font-size: 13px; color: rgba(240,230,204,0.5); min-width: 18px; text-align: right; }
-.qalb-legend-bar-track { flex: 1; height: 3px; background: rgba(255,255,255,0.07); border-radius: 2px; overflow: hidden; }
-.qalb-legend-bar-fill { height: 100%; border-radius: 2px; transition: width 0.6s ease; opacity: 0.75; }
+.qalb-legend-name { font-size: 12px; color: #1d3129; font-weight: 500; min-width: 52px; }
+.qalb-legend-count { font-family: 'Playfair Display', serif; font-size: 13px; font-weight: 600; color: #718276; min-width: 18px; text-align: right; }
+.qalb-legend-bar-track { flex: 1; height: 4px; background: #eef2ec; border-radius: 999px; overflow: hidden; }
+.qalb-legend-bar-fill { height: 100%; border-radius: 999px; transition: width 0.6s ease; opacity: 0.9; }
 
 /* Filter chips */
-.qalb-chip-row { display: flex; overflow-x: auto; gap: 7px; padding: 16px 20px 4px; scrollbar-width: none; animation: fadeSlide 0.7s 0.18s ease both; opacity: 0; animation-fill-mode: forwards; }
+.qalb-chip-row { display: flex; overflow-x: auto; gap: 8px; padding: 16px 20px 4px; scrollbar-width: none; animation: fadeSlide 0.7s 0.18s ease both; opacity: 0; animation-fill-mode: forwards; }
 .qalb-chip-row::-webkit-scrollbar { display: none; }
-.qalb-chip { flex-shrink: 0; padding: 7px 14px; border-radius: 20px; border: 0.5px solid rgba(180,140,60,0.2); background: rgba(255,255,255,0.03); color: rgba(240,230,204,0.45); font-family: 'Lora', serif; font-size: 12.5px; letter-spacing: 0.03em; cursor: pointer; transition: all 0.22s; white-space: nowrap; }
-.qalb-chip.active { background: rgba(201,163,70,0.16); border-color: rgba(180,140,60,0.38); color: #e8c97a; }
-.qalb-chip:not(.active):hover { color: rgba(240,230,204,0.7); background: rgba(255,255,255,0.05); }
+.qalb-chip { flex-shrink: 0; padding: 7px 15px; border-radius: 999px; border: 1px solid #e2e9df; background: #ffffff; color: #586b61; font-family: 'DM Sans', sans-serif; font-size: 12.5px; font-weight: 500; cursor: pointer; transition: all 0.22s; white-space: nowrap; box-shadow: 0 1px 4px rgba(29, 49, 41, 0.02); }
+.qalb-chip.active { background: #eef6f0; border-color: #167754; color: #167754; font-weight: 600; box-shadow: 0 2px 8px rgba(22, 119, 84, 0.08); }
+.qalb-chip:not(.active):hover { color: #1d3129; background: #fbfcf9; border-color: #d0dbcc; }
 
 /* Month section */
 .qalb-month-section { padding: 0 20px; }
 .qalb-month-label { display: flex; align-items: center; gap: 12px; margin: 24px 0 12px; }
-.qalb-month-label span { font-family: 'Cormorant Garamond', serif; font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; color: #c9a346; white-space: nowrap; }
-.qalb-month-rule { flex: 1; height: 0.5px; background: linear-gradient(90deg, rgba(180,140,60,0.25), transparent); }
+.qalb-month-label span { font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #167754; white-space: nowrap; }
+.qalb-month-rule { flex: 1; height: 1px; background: linear-gradient(90deg, #d8e2d5, transparent); }
 
 /* Mood card */
 .qalb-mood-card {
   position: relative;
   display: flex; align-items: center; gap: 14px;
-  background: rgba(255,255,255,0.03);
-  border: 0.5px solid rgba(180,140,60,0.15);
+  background: #ffffff;
+  border: 1px solid #e2e9df;
   border-radius: 16px;
   padding: 14px 16px;
   margin-bottom: 9px;
   overflow: hidden;
+  box-shadow: 0 2px 10px rgba(29, 49, 41, 0.03);
   animation: cardIn 0.5s ease both;
-  transition: background 0.2s;
+  transition: all 0.2s;
 }
-.qalb-mood-card:hover { background: rgba(255,255,255,0.05); }
-.qalb-mood-accent { position: absolute; left: 0; top: 20%; bottom: 20%; width: 3px; border-radius: 0 3px 3px 0; opacity: 0.75; }
+.qalb-mood-card:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(29, 49, 41, 0.05); }
+.qalb-mood-accent { position: absolute; left: 0; top: 18%; bottom: 18%; width: 3px; border-radius: 0 3px 3px 0; }
 .qalb-mood-bubble { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.qalb-mood-emoji { font-size: 20px; line-height: 1; }
+.qalb-mood-emoji { font-size: 21px; line-height: 1; }
 .qalb-mood-body { flex: 1; min-width: 0; }
-.qalb-mood-name { font-family: 'Cormorant Garamond', serif; font-size: 17px; font-weight: 500; display: block; margin-bottom: 4px; letter-spacing: 0.02em; }
-.qalb-mood-time-row { display: flex; align-items: center; gap: 5px; }
-.qalb-mood-date { font-size: 11.5px; color: rgba(240,230,204,0.4); font-family: 'Lora', serif; }
-.qalb-mood-time-badge { font-size: 10.5px; color: rgba(107,155,128,0.65); background: rgba(107,155,128,0.1); border-radius: 6px; padding: 1px 6px; font-family: 'Lora', serif; }
+.qalb-mood-name { font-family: 'Playfair Display', Georgia, serif; font-size: 17px; font-weight: 600; display: block; margin-bottom: 3px; }
+.qalb-mood-time-row { display: flex; align-items: center; gap: 6px; }
+.qalb-mood-date { font-size: 11.5px; color: #718276; }
+.qalb-mood-time-badge { font-size: 10.5px; font-weight: 600; color: #167754; background: #eef6f0; border-radius: 6px; padding: 1px 7px; }
 
 /* Loading */
 .qalb-loading { display: flex; justify-content: center; gap: 8px; padding: 60px 0; }
-.qalb-loading-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(201,163,70,0.5); animation: pulse 1.2s ease-in-out infinite; }
+.qalb-loading-dot { width: 8px; height: 8px; border-radius: 50%; background: #167754; animation: pulse 1.2s ease-in-out infinite; }
 
 /* Empty */
 .qalb-empty { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 60px 32px; text-align: center; }
-.qalb-empty-title { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 300; color: rgba(240,230,204,0.7); }
-.qalb-empty-sub { font-size: 13.5px; color: rgba(107,155,128,0.65); line-height: 1.65; max-width: 240px; font-style: italic; }
-.qalb-empty-btn { margin-top: 8px; padding: 11px 28px; border-radius: 12px; border: 0.5px solid rgba(180,140,60,0.35); background: rgba(201,163,70,0.12); color: #e8c97a; font-family: 'Cormorant Garamond', serif; font-size: 15px; letter-spacing: 0.06em; text-decoration: none; transition: all 0.22s; }
-.qalb-empty-btn:hover { background: rgba(201,163,70,0.22); }
+.qalb-empty-title { font-family: 'Playfair Display', Georgia, serif; font-size: 22px; font-weight: 600; color: #1d3129; }
+.qalb-empty-sub { font-size: 14px; color: #586b61; line-height: 1.65; max-width: 250px; font-style: italic; }
+.qalb-empty-btn { margin-top: 8px; padding: 11px 26px; border-radius: 999px; background: linear-gradient(135deg, #167754, #0c533c); color: #ffffff; font-size: 13.5px; font-weight: 600; letter-spacing: 0.02em; text-decoration: none; box-shadow: 0 4px 16px rgba(22, 119, 84, 0.25); transition: all 0.22s; }
+.qalb-empty-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(22, 119, 84, 0.35); }
 
 /* Nav */
-.qalb-nav { position: fixed; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-around; align-items: center; padding: 12px 0 20px; background: rgba(10,26,19,0.92); border-top: 0.5px solid rgba(180,140,60,0.22); backdrop-filter: blur(16px); z-index: 50; }
-.qalb-nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; padding: 4px 16px; text-decoration: none; transition: all 0.2s; }
-.qalb-nav-icon-wrap { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
-.qalb-nav-item.active .qalb-nav-icon-wrap { background: rgba(201,163,70,0.18); }
-.qalb-nav-label { font-size: 10px; letter-spacing: 0.08em; color: #6b9b80; text-transform: uppercase; font-family: 'Lora', serif; }
-.qalb-nav-item.active .qalb-nav-label { color: #c9a346; }
+.qalb-nav {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  display: flex; justify-content: space-around; align-items: center;
+  padding: 10px 0 18px;
+  background: rgba(245,247,240,0.95);
+  border-top: 1px solid #e2e9df;
+  backdrop-filter: blur(16px);
+  z-index: 50;
+}
+.qalb-nav-item {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  cursor: pointer; padding: 4px 16px; text-decoration: none; transition: all 0.2s;
+}
+.qalb-nav-icon-wrap {
+  width: 36px; height: 36px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s;
+}
+.qalb-nav-item.active .qalb-nav-icon-wrap { background: #eef6f0; }
+.qalb-nav-label {
+  font-size: 10px; font-weight: 500; letter-spacing: 0.04em;
+  color: #718276; font-family: 'DM Sans', sans-serif; text-transform: uppercase;
+}
+.qalb-nav-item.active .qalb-nav-label { color: #167754; font-weight: 700; }
 
 @keyframes fadeSlide { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes cardIn    { from { opacity: 0; transform: translateY(8px);  } to { opacity: 1; transform: translateY(0); } }
