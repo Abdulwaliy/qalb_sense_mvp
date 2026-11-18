@@ -4,6 +4,8 @@ import { addJournal } from "../services/journalService.js";
 import { saveReflection } from "../services/reflectionService.js";
 import { generateReflection } from "../services/aiService.js";
 import { Link, useLocation } from "react-router-dom";
+import { logout } from "../services/authService.js";
+import { getLandingUrl } from "../utils/domain.js";
 
 /* ─────────────────────────────────────────
    DATA
@@ -316,6 +318,14 @@ export default function Dashboard({ user }) {
         <div className="qalb-glow" />
 
         <div className="qalb-app">
+          {/* ── TOP UTILITY BAR ── */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 20px 0" }}>
+            <a href={getLandingUrl()} style={{ fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "#c9a346", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 6, opacity: 0.85 }}>← QalbSense</a>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              {user?.email && <span style={{ fontSize: 11, color: "rgba(107,155,128,0.7)", letterSpacing: "0.04em" }}>{user.email.split("@")[0]}</span>}
+              <button onClick={logout} style={{ background: "rgba(255,255,255,0.04)", border: "0.5px solid rgba(180,140,60,0.22)", borderRadius: 8, padding: "4px 10px", fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "#e8c97a", cursor: "pointer" }}>Sign out</button>
+            </div>
+          </div>
 
           {/* ── HEADER ── */}
           <header className="qalb-header">

@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { getAppUrl } from "../utils/domain.js";
 import "./LandingPage.css";
 
 function BrandMark() {
@@ -37,7 +38,7 @@ function FeatureIcon({ type }) {
   );
 }
 
-function LandingPage() {
+function LandingPage({ user }) {
   return (
     <main className="landing-page">
       <header className="landing-header">
@@ -50,7 +51,15 @@ function LandingPage() {
           <a href="#how-it-works">How it works</a>
           <a href="#our-intention">Our intention</a>
         </nav>
-        <Link className="landing-nav-cta" to="/login">Sign in <span aria-hidden="true">↗</span></Link>
+        {user ? (
+          <a className="landing-nav-cta" href={getAppUrl("/")}>
+            Go to App <span aria-hidden="true">→</span>
+          </a>
+        ) : (
+          <a className="landing-nav-cta" href={getAppUrl("/login")}>
+            Sign in <span aria-hidden="true">↗</span>
+          </a>
+        )}
       </header>
 
       <section className="landing-hero">
@@ -62,9 +71,15 @@ function LandingPage() {
             faith-centered reflections for the moments in between.
           </p>
           <div className="landing-hero-actions">
-            <Link className="landing-button landing-button-primary" to="/signup">
-              Begin your journey <span aria-hidden="true">→</span>
-            </Link>
+            {user ? (
+              <a className="landing-button landing-button-primary" href={getAppUrl("/")}>
+                Open your App <span aria-hidden="true">→</span>
+              </a>
+            ) : (
+              <a className="landing-button landing-button-primary" href={getAppUrl("/signup")}>
+                Begin your journey <span aria-hidden="true">→</span>
+              </a>
+            )}
             <a className="landing-text-link" href="#features">Get to know QalbSense</a>
           </div>
           <p className="landing-privacy-note">
@@ -162,7 +177,9 @@ function LandingPage() {
           <span className="landing-section-kicker">Your own gentle rhythm</span>
           <h2>Come as you are.<br /><em>Start wherever you are.</em></h2>
           <p>There is no perfect way to begin. QalbSense is here for the real, ordinary moments that make up a life.</p>
-          <Link className="landing-text-link landing-how-link" to="/signup">Make space for yourself <span aria-hidden="true">→</span></Link>
+          <a className="landing-text-link landing-how-link" href={getAppUrl(user ? "/" : "/signup")}>
+            {user ? "Continue your check-in" : "Make space for yourself"} <span aria-hidden="true">→</span>
+          </a>
         </div>
         <div className="landing-steps">
           <article className="landing-step">
@@ -183,8 +200,18 @@ function LandingPage() {
       <section className="landing-final-cta">
         <span className="landing-section-kicker">Your heart deserves this care</span>
         <h2>A softer moment can<br /><em>start right here.</em></h2>
-        <Link className="landing-button landing-button-light" to="/signup">Create your space <span aria-hidden="true">→</span></Link>
-        <p>Already have an account? <Link to="/login">Sign in</Link></p>
+        {user ? (
+          <a className="landing-button landing-button-light" href={getAppUrl("/")}>
+            Go to Dashboard <span aria-hidden="true">→</span>
+          </a>
+        ) : (
+          <>
+            <a className="landing-button landing-button-light" href={getAppUrl("/signup")}>
+              Create your space <span aria-hidden="true">→</span>
+            </a>
+            <p>Already have an account? <a href={getAppUrl("/login")}>Sign in</a></p>
+          </>
+        )}
         <span className="landing-cta-ornament" aria-hidden="true">✳</span>
       </section>
 

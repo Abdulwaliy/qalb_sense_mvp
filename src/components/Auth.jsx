@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { signUp, login, logout } from "../services/authService.js";
+import { getLandingUrl } from "../utils/domain.js";
 
 /* ─────────────────────────────────────────
    ICONS
@@ -218,7 +219,7 @@ export default function Auth({ user, initialMode = "login" }) {
       <div className="qalb-auth-root">
         <div className="qalb-bg-pattern" />
         <div className="qalb-glow" />
-        <Link className="qalb-auth-home" to="/">← Back to QalbSense</Link>
+        <a className="qalb-auth-home" href={getLandingUrl()}>← Back to QalbSense</a>
 
         <Toast message={toast.message} type={toast.type} visible={toast.visible} />
 
