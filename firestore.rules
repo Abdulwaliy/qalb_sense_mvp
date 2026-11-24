@@ -1,0 +1,19 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /waitlist/{emailId} {
+      allow get: if true;
+      allow create: if request.resource.data.keys().hasOnly(['email', 'createdAt', 'source'])
+                    && request.resource.data.email is string
+                    && request.resource.data.email.size() > 3
+                    && request.resource.data.source == 'landing-page';
+      allow update: if request.resource.data.diff(resource.data).affectedKeys()
+                        .hasOnly(['interests', 'feedbackSubmittedAt'])
+                    && request.resource.data.interests is list
+                    && request.resource.data.interests.size() > 0;
+      allow delete: if false;
+      allow list: if false;
+    }
+  }
+}

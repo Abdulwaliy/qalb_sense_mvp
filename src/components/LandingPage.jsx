@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { getAppUrl } from "../utils/domain.js";
 import "./LandingPage.css";
 
 function BrandMark() {
@@ -38,7 +37,7 @@ function FeatureIcon({ type }) {
   );
 }
 
-function LandingPage({ user }) {
+function LandingPage() {
   return (
     <main className="landing-page">
       <header className="landing-header">
@@ -47,47 +46,32 @@ function LandingPage({ user }) {
           <span>qalb<span className="landing-brand-accent">sense</span></span>
         </Link>
         <nav className="landing-nav" aria-label="Main navigation">
-          <a href="#features">The experience</a>
-          <a href="#how-it-works">How it works</a>
-          <a href="#our-intention">Our intention</a>
+          <a href="#home">Home</a>
+          <a href="#experience">Experience</a>
+          <a href="#approach">Our Approach</a>
+          <a href="#privacy">Privacy</a>
         </nav>
-        {user ? (
-          <a className="landing-nav-cta" href={getAppUrl("/")}>
-            Go to App <span aria-hidden="true">→</span>
-          </a>
-        ) : (
-          <a className="landing-nav-cta" href={getAppUrl("/login")}>
-            Sign in <span aria-hidden="true">↗</span>
-          </a>
-        )}
+        <Link className="landing-nav-cta" to="/waitlist">
+          Join the Waitlist <span aria-hidden="true">→</span>
+        </Link>
       </header>
 
-      <section className="landing-hero">
+      <section className="landing-hero" id="home">
         <div className="landing-hero-copy">
           <div className="landing-eyebrow"><span /> A little space for your heart</div>
-          <h1>A calmer heart begins with <em>a moment for you.</em></h1>
+          <h1>Understand yourself. Reflect with intention. Grow with purpose.</h1>
           <p className="landing-hero-description">
-            A gentle place to check in, write what is on your mind, and find
-            faith-centered reflections for the moments in between.
+            Your personal space for journaling, emotional awareness and meaningful
+            self-reflection, grounded in an Islamic understanding of wellbeing.
           </p>
           <div className="landing-hero-actions">
-            {user ? (
-              <a className="landing-button landing-button-primary" href={getAppUrl("/")}>
-                Open your App <span aria-hidden="true">→</span>
-              </a>
-            ) : (
-              <a className="landing-button landing-button-primary" href={getAppUrl("/signup")}>
-                Begin your journey <span aria-hidden="true">→</span>
-              </a>
-            )}
-            <a className="landing-text-link" href="#features">Get to know QalbSense</a>
+            <Link className="landing-button landing-button-primary" to="/waitlist">
+              Join the Waitlist <span aria-hidden="true">→</span>
+            </Link>
+            <a className="landing-text-link" href="#experience">Explore QalbSense</a>
           </div>
           <p className="landing-privacy-note">
-            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <rect x="3" y="7" width="10" height="7" rx="2" />
-              <path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" />
-            </svg>
-            Your reflections are yours. Always.
+            Early access. No spam. Unsubscribe anytime.
           </p>
         </div>
 
@@ -131,87 +115,135 @@ function LandingPage({ user }) {
             <small>Qur’an 13:28</small>
           </div>
         </div>
-        <a className="landing-scroll-cue" href="#features"><span /> Scroll to explore</a>
+        <a className="landing-scroll-cue" href="#experience"><span /> Scroll to explore</a>
       </section>
 
-      <section className="landing-features" id="features">
+      <section className="landing-features landing-need" id="need-for-reflection">
         <div className="landing-section-heading">
-          <span className="landing-section-kicker">A practice, not a pressure</span>
-          <h2>Meet yourself where <em>you are.</em></h2>
-          <p>Small, meaningful moments can make space for a little more understanding and a little more ease.</p>
+          <span className="landing-section-kicker">Need for reflection</span>
+          <h2>Understanding yourself begins with <em>paying attention.</em></h2>
+          <p>
+            We carry thoughts and feelings through every day, yet rarely pause to
+            understand them. QalbSense gives you the space to do that, gently and
+            on your own terms.
+          </p>
+        </div>
+      </section>
+
+      <section className="landing-features" id="experience">
+        <div className="landing-section-heading">
+          <span className="landing-section-kicker">The QalbSense experience</span>
+          <h2>A little space to <em>understand more.</em></h2>
         </div>
         <div className="landing-feature-grid">
           <article className="landing-feature-card">
-            <span className="landing-feature-icon"><FeatureIcon type="mood" /></span>
-            <span className="landing-feature-number">01 / CHECK IN</span>
-            <h3>Name what you feel</h3>
-            <p>Pause and notice your mood without judgment. Over time, gentle check-ins can help you see your patterns more clearly.</p>
+            <span className="landing-feature-icon"><FeatureIcon type="journal" /></span>
+            <span className="landing-feature-number">01 / JOURNAL</span>
+            <h3>Write freely.</h3>
+            <p>A private space for your thoughts, experiences and reflections.</p>
             <span className="landing-feature-decoration" aria-hidden="true">☼</span>
           </article>
           <article className="landing-feature-card">
-            <span className="landing-feature-icon"><FeatureIcon type="journal" /></span>
-            <span className="landing-feature-number">02 / JOURNAL</span>
-            <h3>Let your thoughts land</h3>
-            <p>Put the day into words in a private journal, whether you have a lot to say or just a little.</p>
+            <span className="landing-feature-icon"><FeatureIcon type="mood" /></span>
+            <span className="landing-feature-number">02 / EMOTIONS</span>
+            <h3>Notice how you feel.</h3>
+            <p>Log your emotions and see how they change over time.</p>
             <span className="landing-feature-decoration" aria-hidden="true">⌁</span>
           </article>
           <article className="landing-feature-card">
             <span className="landing-feature-icon"><FeatureIcon type="reflection" /></span>
-            <span className="landing-feature-number">03 / REFLECT</span>
-            <h3>Find a thoughtful pause</h3>
-            <p>Receive a compassionate, faith-centered reflection to help you sit with what is on your heart.</p>
+            <span className="landing-feature-number">03 / GUIDED REFLECTION</span>
+            <h3>Go deeper.</h3>
+            <p>
+              Explore your entries with thoughtful prompts that help you reflect.
+              AI supports your reflection; it doesn't replace your own insight or
+              scholarly guidance.
+            </p>
             <span className="landing-feature-decoration" aria-hidden="true">✧</span>
           </article>
         </div>
       </section>
 
-      <section className="landing-intention" id="our-intention">
+      <section className="landing-intention">
         <span className="landing-intention-symbol" aria-hidden="true">۞</span>
         <p>“And He is with you wherever you are.”</p>
         <span className="landing-intention-reference">Al-Hadid 57:4</span>
         <span className="landing-intention-note">A quiet reminder to carry into the day.</span>
       </section>
 
-      <section className="landing-how" id="how-it-works">
+      <section className="landing-how" id="approach">
         <div className="landing-how-copy">
-          <span className="landing-section-kicker">Your own gentle rhythm</span>
-          <h2>Come as you are.<br /><em>Start wherever you are.</em></h2>
-          <p>There is no perfect way to begin. QalbSense is here for the real, ordinary moments that make up a life.</p>
-          <a className="landing-text-link landing-how-link" href={getAppUrl(user ? "/" : "/signup")}>
-            {user ? "Continue your check-in" : "Make space for yourself"} <span aria-hidden="true">→</span>
-          </a>
+          <span className="landing-section-kicker">Our approach</span>
+          <h2>Reflection, at <em>your own pace.</em></h2>
+          <p>
+            No perfect words or daily streaks required. QalbSense is a place to
+            notice, write and reflect in a way that feels right for you.
+          </p>
+          <Link className="landing-text-link landing-how-link" to="/waitlist">
+            Join the Waitlist <span aria-hidden="true">→</span>
+          </Link>
         </div>
         <div className="landing-steps">
           <article className="landing-step">
             <span className="landing-step-number">01</span>
-            <div><h3>Take a breath</h3><p>Arrive just as you are. There is no score and nothing to get right.</p></div>
+            <div><h3>Make space</h3><p>Pause and notice what is on your mind, without pressure.</p></div>
           </article>
           <article className="landing-step">
             <span className="landing-step-number">02</span>
-            <div><h3>Check in honestly</h3><p>Choose a mood, write a few words, or simply notice what is present.</p></div>
+            <div><h3>Explore your thoughts</h3><p>Journal freely and check in with your emotions over time.</p></div>
           </article>
           <article className="landing-step">
             <span className="landing-step-number">03</span>
-            <div><h3>Carry a little clarity</h3><p>Reflect on your experience with a gentle reminder rooted in faith.</p></div>
+            <div><h3>Reflect with intention</h3><p>Use thoughtful prompts as a companion to your own insight.</p></div>
           </article>
         </div>
       </section>
 
+      <section className="landing-privacy" id="privacy">
+        <span className="landing-section-kicker">Privacy</span>
+        <h2>Your reflections are personal.</h2>
+        <p>
+          We believe reflection should feel like your own. We’ll be clear about
+          how your information is used as QalbSense grows.
+        </p>
+      </section>
+
+      <section className="landing-foundation" id="foundation">
+        <div className="landing-foundation-copy">
+          <span className="landing-section-kicker">Islamic foundation</span>
+          <h2>Rooted in an understanding of <em>the self.</em></h2>
+          <p>
+            QalbSense is informed by Islamic values that encourage reflection,
+            self-awareness and accountability, brought into a modern wellbeing experience.
+          </p>
+        </div>
+      </section>
+
+      <section className="landing-trust" id="terms">
+        <div className="landing-section-heading">
+          <span className="landing-section-kicker">Privacy and trust</span>
+          <h2>Your personal reflections <em>deserve care.</em></h2>
+        </div>
+        <div className="landing-trust-grid">
+          <article><span>01</span><h3>How your entries are stored</h3></article>
+          <article><span>02</span><h3>How AI uses your information</h3></article>
+          <article><span>03</span><h3>Who can access your data</h3></article>
+          <article><span>04</span><h3>Deleting your data</h3></article>
+        </div>
+        <p className="landing-trust-note">
+          Read our Privacy Policy
+          <br />
+          <small>Privacy details should reflect verified product practices.</small>
+        </p>
+      </section>
+
       <section className="landing-final-cta">
-        <span className="landing-section-kicker">Your heart deserves this care</span>
-        <h2>A softer moment can<br /><em>start right here.</em></h2>
-        {user ? (
-          <a className="landing-button landing-button-light" href={getAppUrl("/")}>
-            Go to Dashboard <span aria-hidden="true">→</span>
-          </a>
-        ) : (
-          <>
-            <a className="landing-button landing-button-light" href={getAppUrl("/signup")}>
-              Create your space <span aria-hidden="true">→</span>
-            </a>
-            <p>Already have an account? <a href={getAppUrl("/login")}>Sign in</a></p>
-          </>
-        )}
+        <span className="landing-section-kicker">A little space for your heart</span>
+        <h2>Make room for<br /><em>meaningful reflection.</em></h2>
+        <Link className="landing-button landing-button-light" to="/waitlist">
+          Join the Waitlist <span aria-hidden="true">→</span>
+        </Link>
+        <p>Early access. No spam. Unsubscribe anytime.</p>
         <span className="landing-cta-ornament" aria-hidden="true">✳</span>
       </section>
 
@@ -220,8 +252,13 @@ function LandingPage({ user }) {
           <BrandMark />
           <span>qalb<span className="landing-brand-accent">sense</span></span>
         </Link>
-        <span>A little space for your heart.</span>
-        <span>Made with care <span aria-hidden="true">✦</span></span>
+        <span>QalbSense is a product by Fitrah.</span>
+        <nav aria-label="Footer navigation">
+          <a href="#privacy">Privacy Policy</a>
+          <a href="#terms">Terms</a>
+          <a href="#foundation">Contact</a>
+        </nav>
+        <span>© 2026 Fitrah. All rights reserved.</span>
       </footer>
     </main>
   );
