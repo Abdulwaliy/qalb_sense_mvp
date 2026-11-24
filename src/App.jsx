@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Navigate, Route, Routes } from "react-router-d
 import { observeAuthState } from "./services/authService.js";
 import Auth from "./components/Auth.jsx";
 import LandingPage from "./components/LandingPage.jsx";
+import WaitlistPage from "./components/WaitlistPage.jsx";
 import MoodHistory from "./components/MoodHistory.jsx";
 import JournalHistory from "./components/JournalHistory.jsx";
 import Dashboard from "./components/Dashboard.jsx";
@@ -48,7 +49,7 @@ function App() {
     return () => unsubscribe();
   }, []);
 
-  if (loading) {
+  if (loading && isApp) {
     return (
       <div style={{
         minHeight: "100vh",
@@ -96,6 +97,7 @@ function App() {
     <Router basename={baseUrl}>
       <Routes>
         <Route path="/" element={<LandingPage user={user} />} />
+        <Route path="/waitlist" element={<WaitlistPage />} />
         <Route path="/login" element={<Auth user={user} initialMode="login" />} />
         <Route path="/signup" element={<Auth user={user} initialMode="signup" />} />
         <Route path="*" element={<Navigate to="/" replace />} />
