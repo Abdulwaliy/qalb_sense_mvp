@@ -3,6 +3,8 @@ import { getUserJournals } from "../services/journalService.js";
 import { Link, useLocation } from "react-router-dom";
 import { logout } from "../services/authService.js";
 import { getLandingUrl } from "../utils/domain.js";
+import ReflectionModal from "./ReflectionModal.jsx";
+import TabAyahBanner from "./TabAyahBanner.jsx";
 
 /* ─────────────────────────────────────────
    ICONS
@@ -50,41 +52,70 @@ function formatTime(seconds) {
 ───────────────────────────────────────── */
 const NavHome = ({ a }) => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-    <path d="M10 2L3 8v10h5v-5h4v5h5V8L10 2z" stroke={a ? "#167754" : "#718276"} strokeWidth="1.4" strokeLinejoin="round"/>
+    <path d="M3 9.2 10 3.2l7 6v7.1a1.5 1.5 0 0 1-1.5 1.5H4.5A1.5 1.5 0 0 1 3 16.3V9.2Z"
+      fill={a ? "rgba(22, 119, 84, 0.14)" : "none"}
+      stroke={a ? "#167754" : "#6b7d72"} strokeWidth="1.55" strokeLinejoin="round" />
+    <path d="M8 17.8v-4.2a2 2 0 0 1 4 0v4.2"
+      stroke={a ? "#167754" : "#6b7d72"} strokeWidth="1.55" strokeLinecap="round" />
   </svg>
 );
 const NavMood = ({ a }) => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-    <circle cx="10" cy="8" r="5" stroke={a ? "#167754" : "#718276"} strokeWidth="1.4"/>
-    <path d="M10 13v5M7 16h6" stroke={a ? "#167754" : "#718276"} strokeWidth="1.4" strokeLinecap="round"/>
+    <path d="M10 16.6s-5.8-3.5-6.8-7.3a3.7 3.7 0 0 1 6.8-3 3.7 3.7 0 0 1 6.8 3c-1 3.8-6.8 7.3-6.8 7.3Z"
+      fill={a ? "rgba(22, 119, 84, 0.16)" : "none"}
+      stroke={a ? "#167754" : "#6b7d72"} strokeWidth="1.55" strokeLinejoin="round" />
   </svg>
 );
 const NavJournal = ({ a }) => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-    <rect x="4" y="3" width="12" height="14" rx="2" stroke={a ? "#167754" : "#718276"} strokeWidth="1.4"/>
-    <path d="M7 8h6M7 11h4" stroke={a ? "#167754" : "#718276"} strokeWidth="1.4" strokeLinecap="round"/>
+    <path d="M3.2 4.8A1.8 1.8 0 0 1 5 3h3.6c.8 0 1.4.6 1.4 1.4v12.2c-.5-.5-1.2-.8-2-.8H5a1.8 1.8 0 0 1-1.8-1.8V4.8Z"
+      fill={a ? "rgba(22, 119, 84, 0.14)" : "none"}
+      stroke={a ? "#167754" : "#6b7d72"} strokeWidth="1.5" strokeLinejoin="round" />
+    <path d="M16.8 4.8A1.8 1.8 0 0 0 15 3h-3.6c-.8 0-1.4.6-1.4 1.4v12.2c.5-.5 1.2-.8 2-.8H15a1.8 1.8 0 0 0 1.8-1.8V4.8Z"
+      fill={a ? "rgba(22, 119, 84, 0.14)" : "none"}
+      stroke={a ? "#167754" : "#6b7d72"} strokeWidth="1.5" strokeLinejoin="round" />
   </svg>
 );
 const NavReflect = ({ a }) => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-    <polygon points="10,2 12,7.5 18,7.5 13.5,11.5 15.5,17 10,13 4.5,17 6.5,11.5 2,7.5 8,7.5" stroke={a ? "#167754" : "#718276"} strokeWidth="1.4" strokeLinejoin="round"/>
+    <path d="M10 2.5 11.7 8.3 17.5 10l-5.8 1.7L10 17.5l-1.7-5.8L2.5 10l5.8-1.7L10 2.5Z"
+      fill={a ? "rgba(22, 119, 84, 0.16)" : "none"}
+      stroke={a ? "#167754" : "#6b7d72"} strokeWidth="1.5" strokeLinejoin="round" />
+    <circle cx="15.4" cy="4.6" r="1" fill={a ? "#167754" : "#6b7d72"} />
+  </svg>
+);
+const NavSoon = ({ a }) => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <rect x="4.5" y="8.8" width="11" height="8" rx="2.4"
+      fill={a ? "rgba(22, 119, 84, 0.16)" : "none"}
+      stroke={a ? "#167754" : "#6b7d72"} strokeWidth="1.55" />
+    <path d="M7 8.8V6.7a3 3 0 0 1 6 0v2.1"
+      stroke={a ? "#167754" : "#6b7d72"} strokeWidth="1.55" strokeLinecap="round" />
+    <circle cx="10" cy="12.8" r="1.1" fill={a ? "#167754" : "#6b7d72"} />
   </svg>
 );
 
 /* ─────────────────────────────────────────
    JOURNAL CARD
 ───────────────────────────────────────── */
-function JournalCard({ journal, index }) {
+function JournalCard({ journal, index, onOpenReflection }) {
   const [expanded, setExpanded] = useState(false);
-  const isLong = journal.content?.length > 180;
-  const preview = isLong && !expanded
-    ? journal.content.slice(0, 180) + "…"
+  const isDua = journal.content?.startsWith("🤲 Closing Du‘ā’:");
+  const displayContent = isDua
+    ? journal.content.replace(/^🤲 Closing Du‘ā’:\s*/, "")
     : journal.content;
+  const isLong = displayContent?.length > 180;
+  const preview = isLong && !expanded
+    ? displayContent.slice(0, 180) + "…"
+    : displayContent;
 
   return (
     <article
       className="qalb-journal-card"
-      style={{ animationDelay: `${index * 0.05}s` }}
+      style={{
+        animationDelay: `${index * 0.05}s`,
+        ...(isDua ? { background: "#f7fbf6", borderColor: "#cde2ce" } : {}),
+      }}
     >
       {/* Top accent rule */}
       <div className="qalb-card-top-rule" />
@@ -96,27 +127,64 @@ function JournalCard({ journal, index }) {
           <span className="qalb-card-date">{formatDate(journal.timestamp?.seconds)}</span>
           <span className="qalb-card-time">{formatTime(journal.timestamp?.seconds)}</span>
         </div>
-        {journal.mood && (
-          <span className="qalb-card-mood-badge">{journal.mood}</span>
-        )}
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          {isDua && (
+            <span
+              style={{
+                padding: "3px 9px",
+                borderRadius: 999,
+                background: "#eef6f0",
+                border: "1px solid #bfdeca",
+                color: "#167754",
+                fontSize: 10.5,
+                fontWeight: 700,
+              }}
+            >
+              🤲 Du‘ā’
+            </span>
+          )}
+          {journal.mood && (
+            <span className="qalb-card-mood-badge">{journal.mood}</span>
+          )}
+        </div>
       </div>
 
       {/* Journal content */}
-      <p className="qalb-card-content">{preview}</p>
+      <p
+        className="qalb-card-content"
+        style={isDua ? { fontFamily: "'Playfair Display', Georgia, serif", fontStyle: "italic", color: "#123825" } : undefined}
+      >
+        {preview}
+      </p>
       {isLong && (
         <button className="qalb-card-expand" onClick={() => setExpanded(e => !e)}>
           {expanded ? "Show less" : "Read more"}
         </button>
       )}
 
-      {/* Reflection */}
+      {/* Reflection (opens overlay modal) */}
       {journal.reflection && (
         <div className="qalb-card-reflection">
-          <div className="qalb-reflection-label">
+          <button
+            type="button"
+            onClick={() => onOpenReflection(journal)}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              border: "none",
+              background: "transparent",
+              padding: 0,
+              cursor: "pointer",
+              color: "#167754",
+              fontSize: 11.5,
+              fontWeight: 700,
+              letterSpacing: "0.04em",
+            }}
+          >
             <IconStar />
-            <span>Reflection</span>
-          </div>
-          <p className="qalb-reflection-body">{journal.reflection}</p>
+            <span>View reflection ↗</span>
+          </button>
         </div>
       )}
     </article>
@@ -131,13 +199,15 @@ export default function JournalHistory({ user }) {
   const [journals, setJournals] = useState([]);
   const [loading, setLoading]   = useState(true);
   const [filter, setFilter]     = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeJournalModal, setActiveJournalModal] = useState(null);
 
   useEffect(() => {
     if (!user) return;
     (async () => {
       try {
         const data = await getUserJournals(user.uid);
-        setJournals(data.sort((a, b) => b.timestamp.seconds - a.timestamp.seconds));
+        setJournals(data.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0)));
       } catch (err) {
         console.error(err);
       } finally {
@@ -146,9 +216,19 @@ export default function JournalHistory({ user }) {
     })();
   }, [user]);
 
-  const visible = filter === "with-reflection"
-    ? journals.filter(j => j.reflection)
-    : journals;
+  const totalDuas = journals.filter(j => j.content?.startsWith("🤲 Closing Du‘ā’:")).length;
+  const totalReflected = journals.filter(j => j.reflection).length;
+
+  const q = searchQuery.trim().toLowerCase();
+  const visible = journals.filter(j => {
+    if (filter === "with-reflection" && !j.reflection) return false;
+    if (filter === "duas" && !j.content?.startsWith("🤲 Closing Du‘ā’:")) return false;
+    if (q) {
+      const hay = `${j.content || ""} ${j.reflection || ""} ${j.mood || ""}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
 
   /* Group by month */
   const grouped = visible.reduce((acc, j) => {
@@ -198,23 +278,104 @@ export default function JournalHistory({ user }) {
             <p className="qalb-jh-subtitle">
               {loading ? "Loading…" : `${journals.length} entr${journals.length === 1 ? "y" : "ies"} written`}
             </p>
+            {!loading && journals.length > 0 && (
+              <TabAyahBanner
+                arabic="وَلْتَنظُرْ نَفْسٌ مَّا قَدَّمَتْ لِغَدٍ"
+                translation="Let every soul look to what it has sent forth for tomorrow."
+                reference="Surah Al-Hashr 59:18"
+              />
+            )}
           </header>
 
-          {/* ── FILTER TABS ── */}
+          {/* ── JOURNAL OVERVIEW CARD ── */}
           {!loading && journals.length > 0 && (
-            <div className="qalb-filter-row">
-              <button
-                className={`qalb-filter-btn${filter === "all" ? " active" : ""}`}
-                onClick={() => setFilter("all")}
-              >
-                All entries
-              </button>
-              <button
-                className={`qalb-filter-btn${filter === "with-reflection" ? " active" : ""}`}
-                onClick={() => setFilter("with-reflection")}
-              >
-                ✦ With reflection
-              </button>
+            <div style={{
+              position: "relative",
+              overflow: "hidden",
+              margin: "0 20px 14px",
+              padding: "18px 18px 16px",
+              borderRadius: 20,
+              background: "#ffffff",
+              border: "1px solid #e2e9df",
+              boxShadow: "0 4px 20px rgba(29, 49, 41, 0.04)",
+            }}>
+              <div className="qalb-card-top-rule" />
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: "#167754" }}>
+                  Journal Overview
+                </span>
+                <Link
+                  to="/"
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: "#167754",
+                    textDecoration: "none",
+                    padding: "4px 10px",
+                    borderRadius: 999,
+                    background: "#eef6f0",
+                  }}
+                >
+                  + Write entry
+                </Link>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+                <div style={{ padding: "10px 8px", borderRadius: 12, background: "#f8fbf7", border: "1px solid #e3ebe1", textAlign: "center" }}>
+                  <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 600, color: "#1d3129" }}>{journals.length}</div>
+                  <div style={{ fontSize: 10.5, color: "#586b61", fontWeight: 600 }}>Entries</div>
+                </div>
+                <div style={{ padding: "10px 8px", borderRadius: 12, background: "#eef6f0", border: "1px solid #cde0ce", textAlign: "center" }}>
+                  <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 600, color: "#167754" }}>{totalReflected}</div>
+                  <div style={{ fontSize: 10.5, color: "#167754", fontWeight: 600 }}>Reflected</div>
+                </div>
+                <div style={{ padding: "10px 8px", borderRadius: 12, background: "#fdf8ec", border: "1px solid #f0dfb5", textAlign: "center" }}>
+                  <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 600, color: "#8c6d23" }}>{totalDuas}</div>
+                  <div style={{ fontSize: 10.5, color: "#8c6d23", fontWeight: 600 }}>Du‘ā’s</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── SEARCH & FILTER TABS ── */}
+          {!loading && journals.length > 0 && (
+            <div style={{ padding: "0 20px 6px" }}>
+              <input
+                type="search"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Search your journal entries or Du‘ā’s…"
+                style={{
+                  width: "100%",
+                  padding: "10px 14px",
+                  borderRadius: 999,
+                  border: "1px solid #d8e2d5",
+                  background: "#ffffff",
+                  color: "#1d3129",
+                  fontSize: 13,
+                  outline: "none",
+                  marginBottom: 10,
+                }}
+              />
+              <div className="qalb-filter-row" style={{ padding: 0 }}>
+                <button
+                  className={`qalb-filter-btn${filter === "all" ? " active" : ""}`}
+                  onClick={() => setFilter("all")}
+                >
+                  All entries
+                </button>
+                <button
+                  className={`qalb-filter-btn${filter === "with-reflection" ? " active" : ""}`}
+                  onClick={() => setFilter("with-reflection")}
+                >
+                  ✦ With reflection
+                </button>
+                <button
+                  className={`qalb-filter-btn${filter === "duas" ? " active" : ""}`}
+                  onClick={() => setFilter("duas")}
+                >
+                  🤲 Du‘ā’s
+                </button>
+              </div>
             </div>
           )}
 
@@ -251,9 +412,11 @@ export default function JournalHistory({ user }) {
                 <span>{month}</span>
                 <div className="qalb-month-rule" />
               </div>
-              {entries.map((j, i) => (
-                <JournalCard key={j.id} journal={j} index={i} />
-              ))}
+              <div className="qalb-history-grid">
+                {entries.map((j, i) => (
+                  <JournalCard key={j.id} journal={j} index={i} onOpenReflection={setActiveJournalModal} />
+                ))}
+              </div>
             </section>
           ))}
 
@@ -262,6 +425,17 @@ export default function JournalHistory({ user }) {
 
         </div>
 
+        {/* ── REFLECTION MODAL ── */}
+        <ReflectionModal
+          isOpen={Boolean(activeJournalModal)}
+          onClose={() => setActiveJournalModal(null)}
+          mood={activeJournalModal?.mood}
+          date={formatDate(activeJournalModal?.timestamp?.seconds)}
+          time={formatTime(activeJournalModal?.timestamp?.seconds)}
+          text={activeJournalModal?.reflection}
+          journalContent={activeJournalModal?.content}
+        />
+
         {/* ── BOTTOM NAV ── */}
         <nav className="qalb-nav">
           {[
@@ -269,6 +443,7 @@ export default function JournalHistory({ user }) {
             { to: "/mood-history",      label: "Mood",    Icon: NavMood    },
             { to: "/journal-history",   label: "Journal", Icon: NavJournal },
             { to: "/reflection-history",label: "Reflect", Icon: NavReflect },
+            { to: "/coming-soon",       label: "Coming Soon", Icon: NavSoon    },
           ].map(({ to, label, Icon }) => {
             const active = location.pathname === to;
             return (
@@ -385,26 +560,31 @@ const STYLES = `
 /* Bottom nav */
 .qalb-nav {
   position: fixed; bottom: 0; left: 0; right: 0;
-  display: flex; justify-content: space-around; align-items: center;
-  padding: 10px 0 18px;
-  background: rgba(245,247,240,0.95);
-  border-top: 1px solid #e2e9df;
+  display: flex; justify-content: center; align-items: center; gap: 2px;
+  padding: 8px max(10px, calc((100% - 560px) / 2)) 14px;
+  background: rgba(245,247,240,0.96);
+  border-top: 1px solid #dce5da;
+  box-shadow: 0 -4px 20px rgba(17,33,23,0.04);
   backdrop-filter: blur(16px);
   z-index: 50;
 }
 .qalb-nav-item {
+  flex: 1; min-width: 0;
   display: flex; flex-direction: column; align-items: center; gap: 3px;
-  cursor: pointer; padding: 4px 16px; text-decoration: none; transition: all 0.2s;
+  cursor: pointer; padding: 4px 2px; border-radius: 12px; text-decoration: none; transition: all 0.2s;
 }
 .qalb-nav-icon-wrap {
-  width: 36px; height: 36px; border-radius: 12px;
+  width: 38px; height: 34px; border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
-  transition: background 0.2s;
+  border: 1px solid transparent;
+  transition: background 0.2s, border-color 0.2s;
 }
-.qalb-nav-item.active .qalb-nav-icon-wrap { background: #eef6f0; }
+.qalb-nav-item:hover .qalb-nav-icon-wrap { background: rgba(22,119,84,0.06); }
+.qalb-nav-item.active .qalb-nav-icon-wrap { background: #e6f4ea; border-color: rgba(22,119,84,0.16); }
+.qalb-nav-item:focus-visible { outline: 2px solid #167754; outline-offset: 2px; }
 .qalb-nav-label {
-  font-size: 10px; font-weight: 500; letter-spacing: 0.04em;
-  color: #718276; font-family: 'DM Sans', sans-serif; text-transform: uppercase;
+  font-size: 9.5px; font-weight: 500; letter-spacing: 0.03em;
+  color: #65776c; font-family: 'DM Sans', sans-serif; text-transform: uppercase; white-space: nowrap;
 }
 .qalb-nav-item.active .qalb-nav-label { color: #167754; font-weight: 700; }
 
@@ -412,4 +592,11 @@ const STYLES = `
 @keyframes cardIn    { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes shimmer   { 0%,100% { opacity: 0.75; } 50% { opacity: 1; } }
 @keyframes pulse     { 0%,100% { opacity: 0.3; transform: scale(0.85); } 50% { opacity: 1; transform: scale(1); } }
+
+.qalb-history-grid { display: flex; flex-direction: column; gap: 12px; }
+@media (min-width: 768px) {
+  .qalb-app { max-width: 960px; }
+  .qalb-history-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; align-items: start; }
+  .qalb-journal-card { margin-bottom: 0; }
+}
 `;

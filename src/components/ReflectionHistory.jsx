@@ -1,8 +1,12 @@
 import { useEffect, useState } from "react";
-import { getUserReflections } from "../services/reflectionService.js";
+import { getUserReflections, toggleReflectionFlag } from "../services/reflectionService.js";
 import { Link, useLocation } from "react-router-dom";
 import { logout } from "../services/authService.js";
 import { getLandingUrl } from "../utils/domain.js";
+import StructuredReflection from "./StructuredReflection.jsx";
+import ReflectionModal from "./ReflectionModal.jsx";
+import TabAyahBanner from "./TabAyahBanner.jsx";
+import { cleanMarkdownText, parseReflectionSections } from "../utils/parseReflection.js";
 
 /* ─────────────────────────────────────────
    HELPERS
@@ -45,24 +49,46 @@ function monthKey(ms) {
 ───────────────────────────────────────── */
 const NavHome = ({ a }) => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-    <path d="M10 2L3 8v10h5v-5h4v5h5V8L10 2z" stroke={a ? "#167754" : "#718276"} strokeWidth="1.4" strokeLinejoin="round"/>
+    <path d="M3 9.2 10 3.2l7 6v7.1a1.5 1.5 0 0 1-1.5 1.5H4.5A1.5 1.5 0 0 1 3 16.3V9.2Z"
+      fill={a ? "rgba(22, 119, 84, 0.14)" : "none"}
+      stroke={a ? "#167754" : "#6b7d72"} strokeWidth="1.55" strokeLinejoin="round" />
+    <path d="M8 17.8v-4.2a2 2 0 0 1 4 0v4.2"
+      stroke={a ? "#167754" : "#6b7d72"} strokeWidth="1.55" strokeLinecap="round" />
   </svg>
 );
 const NavMood = ({ a }) => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-    <circle cx="10" cy="8" r="5" stroke={a ? "#167754" : "#718276"} strokeWidth="1.4"/>
-    <path d="M10 13v5M7 16h6" stroke={a ? "#167754" : "#718276"} strokeWidth="1.4" strokeLinecap="round"/>
+    <path d="M10 16.6s-5.8-3.5-6.8-7.3a3.7 3.7 0 0 1 6.8-3 3.7 3.7 0 0 1 6.8 3c-1 3.8-6.8 7.3-6.8 7.3Z"
+      fill={a ? "rgba(22, 119, 84, 0.16)" : "none"}
+      stroke={a ? "#167754" : "#6b7d72"} strokeWidth="1.55" strokeLinejoin="round" />
   </svg>
 );
 const NavJournal = ({ a }) => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-    <rect x="4" y="3" width="12" height="14" rx="2" stroke={a ? "#167754" : "#718276"} strokeWidth="1.4"/>
-    <path d="M7 8h6M7 11h4" stroke={a ? "#167754" : "#718276"} strokeWidth="1.4" strokeLinecap="round"/>
+    <path d="M3.2 4.8A1.8 1.8 0 0 1 5 3h3.6c.8 0 1.4.6 1.4 1.4v12.2c-.5-.5-1.2-.8-2-.8H5a1.8 1.8 0 0 1-1.8-1.8V4.8Z"
+      fill={a ? "rgba(22, 119, 84, 0.14)" : "none"}
+      stroke={a ? "#167754" : "#6b7d72"} strokeWidth="1.5" strokeLinejoin="round" />
+    <path d="M16.8 4.8A1.8 1.8 0 0 0 15 3h-3.6c-.8 0-1.4.6-1.4 1.4v12.2c.5-.5 1.2-.8 2-.8H15a1.8 1.8 0 0 0 1.8-1.8V4.8Z"
+      fill={a ? "rgba(22, 119, 84, 0.14)" : "none"}
+      stroke={a ? "#167754" : "#6b7d72"} strokeWidth="1.5" strokeLinejoin="round" />
   </svg>
 );
 const NavReflect = ({ a }) => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-    <polygon points="10,2 12,7.5 18,7.5 13.5,11.5 15.5,17 10,13 4.5,17 6.5,11.5 2,7.5 8,7.5" stroke={a ? "#167754" : "#718276"} strokeWidth="1.4" strokeLinejoin="round"/>
+    <path d="M10 2.5 11.7 8.3 17.5 10l-5.8 1.7L10 17.5l-1.7-5.8L2.5 10l5.8-1.7L10 2.5Z"
+      fill={a ? "rgba(22, 119, 84, 0.16)" : "none"}
+      stroke={a ? "#167754" : "#6b7d72"} strokeWidth="1.5" strokeLinejoin="round" />
+    <circle cx="15.4" cy="4.6" r="1" fill={a ? "#167754" : "#6b7d72"} />
+  </svg>
+);
+const NavSoon = ({ a }) => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <rect x="4.5" y="8.8" width="11" height="8" rx="2.4"
+      fill={a ? "rgba(22, 119, 84, 0.16)" : "none"}
+      stroke={a ? "#167754" : "#6b7d72"} strokeWidth="1.55" />
+    <path d="M7 8.8V6.7a3 3 0 0 1 6 0v2.1"
+      stroke={a ? "#167754" : "#6b7d72"} strokeWidth="1.55" strokeLinecap="round" />
+    <circle cx="10" cy="12.8" r="1.1" fill={a ? "#167754" : "#6b7d72"} />
   </svg>
 );
 
@@ -87,13 +113,14 @@ function StarRow({ count = 3 }) {
 /* ─────────────────────────────────────────
    REFLECTION CARD
 ───────────────────────────────────────── */
-function ReflectionCard({ item, index }) {
-  const [journalOpen, setJournalOpen] = useState(false);
+function ReflectionCard({ item, index, onToggleBookmark, onToggleAction, onFeedback, onOpenModal, onOpenJournalModal }) {
   const ms = resolveMs(item.createdAt || item.timestamp);
-  const isLongReflection  = item.text?.length > 220;
+  const parsedSections    = parseReflectionSections(item.text);
+  const isLongReflection  = Boolean(parsedSections) || (item.text?.length > 220);
   const journalSnippet    = item.journalContent || item.journal;
-  const isLongJournal     = journalSnippet?.length > 160;
-  const [reflOpen, setReflOpen] = useState(false);
+
+  const mirrorPreview = parsedSections?.[0]?.body;
+  const anchorPreview = parsedSections?.[4]?.body;
 
   return (
     <article
@@ -113,9 +140,28 @@ function ReflectionCard({ item, index }) {
           <span className="qalb-ref-date">{formatDate(ms)}</span>
           {ms > 0 && <span className="qalb-ref-time">{formatTime(ms)}</span>}
         </div>
-        {item.mood && (
-          <span className="qalb-ref-mood-pill">{item.mood}</span>
-        )}
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {item.mood && (
+            <span className="qalb-ref-mood-pill">{item.mood}</span>
+          )}
+          <button
+            type="button"
+            title={item.bookmarked ? "Remove bookmark" : "Save keepsake"}
+            onClick={() => onToggleBookmark(item)}
+            style={{
+              border: "none",
+              background: "transparent",
+              cursor: "pointer",
+              fontSize: 16,
+              lineHeight: 1,
+              color: item.bookmarked ? "#b8871b" : "#9aa99e",
+              padding: "2px 4px",
+              transition: "transform 0.15s, color 0.15s",
+            }}
+          >
+            {item.bookmarked ? "★" : "☆"}
+          </button>
+        </div>
       </div>
 
       {/* Reflection block */}
@@ -125,40 +171,109 @@ function ReflectionCard({ item, index }) {
           <span className="qalb-ref-label">Reflection</span>
         </div>
         <div className="qalb-ref-text-box">
-          <p className="qalb-ref-text">
-            {isLongReflection && !reflOpen
-              ? item.text.slice(0, 220) + "…"
-              : item.text}
-          </p>
+          {!isLongReflection ? (
+            <StructuredReflection
+              text={item.text}
+              verifiedAyah={item.verifiedAyah || null}
+              compact
+            />
+          ) : mirrorPreview ? (
+            <div>
+              <p className="qalb-ref-text" style={{ marginBottom: anchorPreview ? 10 : 0 }}>
+                {mirrorPreview}
+              </p>
+              {anchorPreview && (
+                <div
+                  style={{
+                    padding: "8px 10px",
+                    borderRadius: 10,
+                    background: "#eef6f0",
+                    borderLeft: "3px solid #167754",
+                    fontSize: 12,
+                    fontStyle: "italic",
+                    color: "#123825",
+                  }}
+                >
+                  ۞ {anchorPreview.split("\n")[0]}
+                </div>
+              )}
+            </div>
+          ) : (
+            <p className="qalb-ref-text">
+              {cleanMarkdownText(item.text).slice(0, 220) + "…"}
+            </p>
+          )}
         </div>
         {isLongReflection && (
-          <button className="qalb-expand-btn" onClick={() => setReflOpen(o => !o)}>
-            {reflOpen ? "Show less" : "Read more"}
+          <button className="qalb-expand-btn" onClick={() => onOpenModal(item)}>
+            Expand full reflection ↗
           </button>
         )}
+
+        {/* Sunnah Action Step ('Amal) & Privacy-Safe Feedback */}
+        <div style={{ marginTop: 10, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
+          <button
+            type="button"
+            onClick={() => onToggleAction(item)}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "5px 12px",
+              borderRadius: 999,
+              border: item.actionCompleted ? "1px solid #167754" : "1px solid #dce5da",
+              background: item.actionCompleted ? "#eef6f0" : "#ffffff",
+              color: item.actionCompleted ? "#167754" : "#586b61",
+              fontSize: 11.5,
+              fontWeight: item.actionCompleted ? 700 : 500,
+              cursor: "pointer",
+              transition: "all 0.18s",
+            }}
+          >
+            <span>{item.actionCompleted ? "✓" : "○"}</span>
+            <span>{item.actionCompleted ? "Sunnah step practiced" : "Mark Sunnah step practiced"}</span>
+          </button>
+
+          <div style={{ display: "flex", gap: 5 }}>
+            {[
+              { val: "helpful", icon: "👍" },
+              { val: "needs_work", icon: "👎" },
+            ].map(btn => {
+              const active = item.feedback === btn.val;
+              return (
+                <button
+                  key={btn.val}
+                  type="button"
+                  title={btn.val === "helpful" ? "Helpful reflection" : "Needs improvement"}
+                  onClick={() => onFeedback(item, btn.val)}
+                  style={{
+                    padding: "4px 8px",
+                    borderRadius: 999,
+                    border: active ? "1px solid #167754" : "1px solid #dce5da",
+                    background: active ? "#eef6f0" : "#ffffff",
+                    fontSize: 11.5,
+                    cursor: "pointer",
+                    opacity: item.feedback && !active ? 0.5 : 1,
+                  }}
+                >
+                  {btn.icon}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
-      {/* Journal source (collapsible) */}
+      {/* Journal source (opens overlay modal) */}
       {journalSnippet && (
         <div className="qalb-ref-journal">
-          <button className="qalb-journal-toggle" onClick={() => setJournalOpen(o => !o)}>
+          <button className="qalb-journal-toggle" onClick={() => onOpenJournalModal(item)}>
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
               <rect x="2" y="1.5" width="8" height="9" rx="1" stroke="#167754" strokeWidth="1"/>
               <path d="M4 4.5h4M4 6.5h3" stroke="#167754" strokeWidth="1" strokeLinecap="round"/>
             </svg>
-            <span>From journal</span>
-            <svg
-              width="10" height="10" viewBox="0 0 10 10" fill="none"
-              style={{ transform: journalOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.25s" }}
-            >
-              <path d="M2 4l3 3 3-3" stroke="#718276" strokeWidth="1" strokeLinecap="round"/>
-            </svg>
+            <span>From journal ↗</span>
           </button>
-          {journalOpen && (
-            <p className="qalb-journal-text">
-              {isLongJournal ? journalSnippet.slice(0, 160) + "…" : journalSnippet}
-            </p>
-          )}
         </div>
       )}
     </article>
@@ -172,6 +287,10 @@ export default function ReflectionHistory({ user }) {
   const location = useLocation();
   const [reflections, setReflections] = useState([]);
   const [loading, setLoading]         = useState(true);
+  const [filter, setFilter]           = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeModalItem, setActiveModalItem] = useState(null);
+  const [activeJournalModal, setActiveJournalModal] = useState(null);
 
   useEffect(() => {
     if (!user) return;
@@ -188,8 +307,59 @@ export default function ReflectionHistory({ user }) {
     })();
   }, [user]);
 
+  const handleToggleBookmark = async (item) => {
+    const next = !item.bookmarked;
+    setReflections(prev => prev.map(r => (r.id === item.id ? { ...r, bookmarked: next } : r)));
+    try {
+      await toggleReflectionFlag(item.id, "bookmarked", next);
+    } catch {
+      setReflections(prev => prev.map(r => (r.id === item.id ? { ...r, bookmarked: !next } : r)));
+    }
+  };
+
+  const handleToggleAction = async (item) => {
+    const next = !item.actionCompleted;
+    setReflections(prev => prev.map(r => (r.id === item.id ? { ...r, actionCompleted: next } : r)));
+    try {
+      await toggleReflectionFlag(item.id, "actionCompleted", next);
+    } catch {
+      setReflections(prev => prev.map(r => (r.id === item.id ? { ...r, actionCompleted: !next } : r)));
+    }
+  };
+
+  const handleFeedback = async (item, val) => {
+    const next = item.feedback === val ? null : val;
+    setReflections(prev => prev.map(r => (r.id === item.id ? { ...r, feedback: next } : r)));
+    try {
+      await toggleReflectionFlag(item.id, "feedback", next);
+    } catch {
+      setReflections(prev => prev.map(r => (r.id === item.id ? { ...r, feedback: item.feedback || null } : r)));
+    }
+  };
+
+  const practicedCount = reflections.filter(r => r.actionCompleted).length;
+  const savedCount = reflections.filter(r => r.bookmarked).length;
+  const helpfulCount = reflections.filter(r => r.feedback === "helpful").length;
+  const moodCounts = reflections.reduce((acc, r) => {
+    if (r.mood && r.mood !== "neutral") acc[r.mood] = (acc[r.mood] || 0) + 1;
+    return acc;
+  }, {});
+  const topMood = Object.entries(moodCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
+
+  const uniqueMoods = Array.from(new Set(reflections.map(r => r.mood).filter(Boolean)));
+  const q = searchQuery.trim().toLowerCase();
+  const filtered = reflections.filter((r) => {
+    if (filter === "Saved" && !r.bookmarked) return false;
+    if (filter !== "All" && filter !== "Saved" && r.mood !== filter) return false;
+    if (q) {
+      const hay = `${r.text || ""} ${r.journalContent || ""} ${r.mood || ""}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
   /* Group by month */
-  const grouped = reflections.reduce((acc, r) => {
+  const grouped = filtered.reduce((acc, r) => {
     const key = monthKey(resolveMs(r.createdAt || r.timestamp));
     if (!acc[key]) acc[key] = [];
     acc[key].push(r);
@@ -241,14 +411,11 @@ export default function ReflectionHistory({ user }) {
 
             {/* Decorative ayah */}
             {!loading && reflections.length > 0 && (
-              <div className="qalb-rh-ayah-strip">
-                <div className="qalb-rule" style={{ flex: "none", width: 24 }} />
-                <span className="qalb-rh-arabic">أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ</span>
-                <div className="qalb-rule" style={{ flex: "none", width: 24 }} />
-              </div>
-            )}
-            {!loading && reflections.length > 0 && (
-              <p className="qalb-rh-trans">"Verily, in the remembrance of Allah do hearts find rest." — Ar-Ra'd 13:28</p>
+              <TabAyahBanner
+                arabic="كِتَابٌ أَنزَلْنَاهُ إِلَيْكَ مُبَارَكٌ لِّيَدَّبَّرُوا آيَاتِهِ"
+                translation="A blessed Book which We have revealed to you, that they may reflect upon its verses."
+                reference="Surah Ṣād 38:29"
+              />
             )}
           </header>
 
@@ -276,7 +443,127 @@ export default function ReflectionHistory({ user }) {
             </div>
           )}
 
+          {/* ── REFLECTION OVERVIEW CARD ── */}
+          {!loading && reflections.length > 0 && (
+            <div style={{
+              position: "relative",
+              overflow: "hidden",
+              margin: "0 20px 14px",
+              padding: "18px 18px 16px",
+              borderRadius: 20,
+              background: "#ffffff",
+              border: "1px solid #e2e9df",
+              boxShadow: "0 4px 20px rgba(29, 49, 41, 0.04)",
+            }}>
+              <div style={{ position: "absolute", top: 0, left: "15%", right: "15%", height: 2, background: "linear-gradient(90deg, transparent, #a48a49, transparent)" }} />
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: "#167754" }}>
+                  Reflection Overview
+                </span>
+                <Link
+                  to="/"
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: "#167754",
+                    textDecoration: "none",
+                    padding: "4px 10px",
+                    borderRadius: 999,
+                    background: "#eef6f0",
+                  }}
+                >
+                  + New reflection
+                </Link>
+              </div>
+
+              {topMood && (
+                <div style={{
+                  marginBottom: 12,
+                  padding: "10px 12px",
+                  borderRadius: 12,
+                  background: "#f8fbf7",
+                  border: "1px solid #e0e9dd",
+                  fontSize: 12.5,
+                  lineHeight: 1.5,
+                  color: "#2d4537",
+                }}>
+                  Most reflected state: <strong style={{ color: "#167754" }}>{topMood}</strong>
+                  {helpfulCount > 0 && (
+                    <span style={{ color: "#687b6f" }}> · 👍 {helpfulCount} marked helpful</span>
+                  )}
+                </div>
+              )}
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+                <div style={{ padding: "10px 8px", borderRadius: 12, background: "#f8fbf7", border: "1px solid #e3ebe1", textAlign: "center" }}>
+                  <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 600, color: "#1d3129" }}>{reflections.length}</div>
+                  <div style={{ fontSize: 10.5, color: "#586b61", fontWeight: 600 }}>Reflections</div>
+                </div>
+                <div style={{ padding: "10px 8px", borderRadius: 12, background: "#eef6f0", border: "1px solid #cde0ce", textAlign: "center" }}>
+                  <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 600, color: "#167754" }}>{practicedCount}</div>
+                  <div style={{ fontSize: 10.5, color: "#167754", fontWeight: 600 }}>Practiced</div>
+                </div>
+                <div style={{ padding: "10px 8px", borderRadius: 12, background: "#fdf8ec", border: "1px solid #f0dfb5", textAlign: "center" }}>
+                  <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 600, color: "#8c6d23" }}>{savedCount}</div>
+                  <div style={{ fontSize: 10.5, color: "#8c6d23", fontWeight: 600 }}>★ Saved</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── SEARCH & FILTERS ── */}
+          {!loading && reflections.length > 0 && (
+            <div style={{ padding: "12px 20px 4px" }}>
+              <input
+                type="search"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Search reflections, feelings, or verses…"
+                style={{
+                  width: "100%",
+                  padding: "10px 14px",
+                  borderRadius: 999,
+                  border: "1px solid #d8e2d5",
+                  background: "#ffffff",
+                  color: "#1d3129",
+                  fontSize: 13,
+                  outline: "none",
+                  marginBottom: 10,
+                }}
+              />
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {["All", "Saved", ...uniqueMoods].map((pill) => {
+                  const active = filter === pill;
+                  return (
+                    <button
+                      key={pill}
+                      type="button"
+                      onClick={() => setFilter(pill)}
+                      style={{
+                        padding: "5px 12px",
+                        borderRadius: 999,
+                        border: active ? "1px solid #167754" : "1px solid #d8e2d5",
+                        background: active ? "#167754" : "#ffffff",
+                        color: active ? "#ffffff" : "#4c6255",
+                        fontSize: 11.5,
+                        fontWeight: active ? 700 : 500,
+                        cursor: "pointer",
+                      }}
+                    >
+                      {pill === "Saved" ? "★ Saved" : pill}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* ── REFLECTION LIST ── */}
+          {!loading && reflections.length > 0 && filtered.length === 0 && (
+            <p style={{ textAlign: "center", color: "#687b6f", fontSize: 13, padding: "28px 20px" }}>
+              No reflections match this filter yet.
+            </p>
+          )}
           {!loading && Object.entries(grouped).map(([month, entries]) => (
             <section key={month} className="qalb-month-section">
               <div className="qalb-month-label">
@@ -284,14 +571,48 @@ export default function ReflectionHistory({ user }) {
                 <span>{month}</span>
                 <div className="qalb-month-rule" />
               </div>
-              {entries.map((r, i) => (
-                <ReflectionCard key={r.id} item={r} index={i} />
-              ))}
+              <div className="qalb-history-grid">
+                {entries.map((r, i) => (
+                  <ReflectionCard
+                    key={r.id}
+                    item={r}
+                    index={i}
+                    onToggleBookmark={handleToggleBookmark}
+                    onToggleAction={handleToggleAction}
+                    onFeedback={handleFeedback}
+                    onOpenModal={setActiveModalItem}
+                    onOpenJournalModal={setActiveJournalModal}
+                  />
+                ))}
+              </div>
             </section>
           ))}
 
           <div style={{ height: 24 }} />
         </div>
+
+        {/* ── FULL REFLECTION MODAL ── */}
+        <ReflectionModal
+          isOpen={Boolean(activeModalItem)}
+          onClose={() => setActiveModalItem(null)}
+          mood={activeModalItem?.mood}
+          date={activeModalItem ? formatDate(resolveMs(activeModalItem.createdAt || activeModalItem.timestamp)) : ""}
+          time={activeModalItem ? formatTime(resolveMs(activeModalItem.createdAt || activeModalItem.timestamp)) : ""}
+          text={activeModalItem?.text}
+          verifiedAyah={activeModalItem?.verifiedAyah || null}
+          journalContent={activeModalItem?.journalContent || activeModalItem?.journal || ""}
+        />
+
+        {/* ── JOURNAL SOURCE MODAL ── */}
+        <ReflectionModal
+          isOpen={Boolean(activeJournalModal)}
+          onClose={() => setActiveJournalModal(null)}
+          mood={activeJournalModal?.mood}
+          date={activeJournalModal ? formatDate(resolveMs(activeJournalModal.createdAt || activeJournalModal.timestamp)) : ""}
+          time={activeJournalModal ? formatTime(resolveMs(activeJournalModal.createdAt || activeJournalModal.timestamp)) : ""}
+          text={null}
+          journalContent={activeJournalModal?.journalContent || activeJournalModal?.journal || ""}
+        />
 
         {/* ── BOTTOM NAV ── */}
         <nav className="qalb-nav">
@@ -300,6 +621,7 @@ export default function ReflectionHistory({ user }) {
             { to: "/mood-history",       label: "Mood",    Icon: NavMood    },
             { to: "/journal-history",    label: "Journal", Icon: NavJournal },
             { to: "/reflection-history", label: "Reflect", Icon: NavReflect },
+            { to: "/coming-soon",        label: "Coming Soon", Icon: NavSoon    },
           ].map(({ to, label, Icon }) => {
             const active = location.pathname === to;
             return (
@@ -434,26 +756,31 @@ const STYLES = `
 /* Nav */
 .qalb-nav {
   position: fixed; bottom: 0; left: 0; right: 0;
-  display: flex; justify-content: space-around; align-items: center;
-  padding: 10px 0 18px;
-  background: rgba(245,247,240,0.95);
-  border-top: 1px solid #e2e9df;
+  display: flex; justify-content: center; align-items: center; gap: 2px;
+  padding: 8px max(10px, calc((100% - 560px) / 2)) 14px;
+  background: rgba(245,247,240,0.96);
+  border-top: 1px solid #dce5da;
+  box-shadow: 0 -4px 20px rgba(17,33,23,0.04);
   backdrop-filter: blur(16px);
   z-index: 50;
 }
 .qalb-nav-item {
+  flex: 1; min-width: 0;
   display: flex; flex-direction: column; align-items: center; gap: 3px;
-  cursor: pointer; padding: 4px 16px; text-decoration: none; transition: all 0.2s;
+  cursor: pointer; padding: 4px 2px; border-radius: 12px; text-decoration: none; transition: all 0.2s;
 }
 .qalb-nav-icon-wrap {
-  width: 36px; height: 36px; border-radius: 12px;
+  width: 38px; height: 34px; border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
-  transition: background 0.2s;
+  border: 1px solid transparent;
+  transition: background 0.2s, border-color 0.2s;
 }
-.qalb-nav-item.active .qalb-nav-icon-wrap { background: #eef6f0; }
+.qalb-nav-item:hover .qalb-nav-icon-wrap { background: rgba(22,119,84,0.06); }
+.qalb-nav-item.active .qalb-nav-icon-wrap { background: #e6f4ea; border-color: rgba(22,119,84,0.16); }
+.qalb-nav-item:focus-visible { outline: 2px solid #167754; outline-offset: 2px; }
 .qalb-nav-label {
-  font-size: 10px; font-weight: 500; letter-spacing: 0.04em;
-  color: #718276; font-family: 'DM Sans', sans-serif; text-transform: uppercase;
+  font-size: 9.5px; font-weight: 500; letter-spacing: 0.03em;
+  color: #65776c; font-family: 'DM Sans', sans-serif; text-transform: uppercase; white-space: nowrap;
 }
 .qalb-nav-item.active .qalb-nav-label { color: #167754; font-weight: 700; }
 
@@ -461,4 +788,11 @@ const STYLES = `
 @keyframes cardIn    { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes shimmer   { 0%,100% { opacity: 0.75; } 50% { opacity: 1; } }
 @keyframes pulse     { 0%,100% { opacity: 0.3; transform: scale(0.85); } 50% { opacity: 1; transform: scale(1); } }
+
+.qalb-history-grid { display: flex; flex-direction: column; gap: 12px; }
+@media (min-width: 768px) {
+  .qalb-app { max-width: 960px; }
+  .qalb-history-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; align-items: start; }
+  .qalb-ref-card { margin-bottom: 0; }
+}
 `;

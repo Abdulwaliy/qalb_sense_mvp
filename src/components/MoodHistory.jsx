@@ -3,18 +3,13 @@ import { getUserMoods } from "../services/moodService.js";
 import { Link, useLocation } from "react-router-dom";
 import { logout } from "../services/authService.js";
 import { getLandingUrl } from "../utils/domain.js";
+import { MOOD_META_MAP, CORE_MOOD_STATES } from "../constants/moods.js";
+import TabAyahBanner from "./TabAyahBanner.jsx";
 
 /* ─────────────────────────────────────────
    MOOD CONFIG
 ───────────────────────────────────────── */
-const MOOD_META = {
-  Happy:   { emoji: "😄", color: "#b8871b", bg: "#fdf8ec", border: "#f3e1b7", label: "Happy"   },
-  Sad:     { emoji: "😢", color: "#326eb8", bg: "#eff5fc", border: "#c8ddf4", label: "Sad"     },
-  Angry:   { emoji: "😡", color: "#c0392b", bg: "#fdf2f0", border: "#f5c6cb", label: "Angry"   },
-  Anxious: { emoji: "😰", color: "#774eb0", bg: "#f6f1fc", border: "#dacaf0", label: "Anxious" },
-  Calm:    { emoji: "😌", color: "#167754", bg: "#eef6f0", border: "#c0decb", label: "Calm"    },
-  Tired:   { emoji: "😴", color: "#617378", bg: "#f2f5f6", border: "#d4dee0", label: "Tired"   },
-};
+const MOOD_META = MOOD_META_MAP;
 const ALL_MOODS = Object.keys(MOOD_META);
 
 /* ─────────────────────────────────────────
@@ -42,24 +37,46 @@ const monthKey = (secs) => {
 ───────────────────────────────────────── */
 const NavHome = ({ a }) => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-    <path d="M10 2L3 8v10h5v-5h4v5h5V8L10 2z" stroke={a ? "#167754" : "#718276"} strokeWidth="1.4" strokeLinejoin="round" />
+    <path d="M3 9.2 10 3.2l7 6v7.1a1.5 1.5 0 0 1-1.5 1.5H4.5A1.5 1.5 0 0 1 3 16.3V9.2Z"
+      fill={a ? "rgba(22, 119, 84, 0.14)" : "none"}
+      stroke={a ? "#167754" : "#6b7d72"} strokeWidth="1.55" strokeLinejoin="round" />
+    <path d="M8 17.8v-4.2a2 2 0 0 1 4 0v4.2"
+      stroke={a ? "#167754" : "#6b7d72"} strokeWidth="1.55" strokeLinecap="round" />
   </svg>
 );
 const NavMood = ({ a }) => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-    <circle cx="10" cy="8" r="5" stroke={a ? "#167754" : "#718276"} strokeWidth="1.4" />
-    <path d="M10 13v5M7 16h6" stroke={a ? "#167754" : "#718276"} strokeWidth="1.4" strokeLinecap="round" />
+    <path d="M10 16.6s-5.8-3.5-6.8-7.3a3.7 3.7 0 0 1 6.8-3 3.7 3.7 0 0 1 6.8 3c-1 3.8-6.8 7.3-6.8 7.3Z"
+      fill={a ? "rgba(22, 119, 84, 0.16)" : "none"}
+      stroke={a ? "#167754" : "#6b7d72"} strokeWidth="1.55" strokeLinejoin="round" />
   </svg>
 );
 const NavJournal = ({ a }) => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-    <rect x="4" y="3" width="12" height="14" rx="2" stroke={a ? "#167754" : "#718276"} strokeWidth="1.4" />
-    <path d="M7 8h6M7 11h4" stroke={a ? "#167754" : "#718276"} strokeWidth="1.4" strokeLinecap="round" />
+    <path d="M3.2 4.8A1.8 1.8 0 0 1 5 3h3.6c.8 0 1.4.6 1.4 1.4v12.2c-.5-.5-1.2-.8-2-.8H5a1.8 1.8 0 0 1-1.8-1.8V4.8Z"
+      fill={a ? "rgba(22, 119, 84, 0.14)" : "none"}
+      stroke={a ? "#167754" : "#6b7d72"} strokeWidth="1.5" strokeLinejoin="round" />
+    <path d="M16.8 4.8A1.8 1.8 0 0 0 15 3h-3.6c-.8 0-1.4.6-1.4 1.4v12.2c.5-.5 1.2-.8 2-.8H15a1.8 1.8 0 0 0 1.8-1.8V4.8Z"
+      fill={a ? "rgba(22, 119, 84, 0.14)" : "none"}
+      stroke={a ? "#167754" : "#6b7d72"} strokeWidth="1.5" strokeLinejoin="round" />
   </svg>
 );
 const NavReflect = ({ a }) => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-    <polygon points="10,2 12,7.5 18,7.5 13.5,11.5 15.5,17 10,13 4.5,17 6.5,11.5 2,7.5 8,7.5" stroke={a ? "#167754" : "#718276"} strokeWidth="1.4" strokeLinejoin="round" />
+    <path d="M10 2.5 11.7 8.3 17.5 10l-5.8 1.7L10 17.5l-1.7-5.8L2.5 10l5.8-1.7L10 2.5Z"
+      fill={a ? "rgba(22, 119, 84, 0.16)" : "none"}
+      stroke={a ? "#167754" : "#6b7d72"} strokeWidth="1.5" strokeLinejoin="round" />
+    <circle cx="15.4" cy="4.6" r="1" fill={a ? "#167754" : "#6b7d72"} />
+  </svg>
+);
+const NavSoon = ({ a }) => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <rect x="4.5" y="8.8" width="11" height="8" rx="2.4"
+      fill={a ? "rgba(22, 119, 84, 0.16)" : "none"}
+      stroke={a ? "#167754" : "#6b7d72"} strokeWidth="1.55" />
+    <path d="M7 8.8V6.7a3 3 0 0 1 6 0v2.1"
+      stroke={a ? "#167754" : "#6b7d72"} strokeWidth="1.55" strokeLinecap="round" />
+    <circle cx="10" cy="12.8" r="1.1" fill={a ? "#167754" : "#6b7d72"} />
   </svg>
 );
 
@@ -127,9 +144,16 @@ function MoodDonut({ moods }) {
 /* ─────────────────────────────────────────
    MOOD CARD
 ───────────────────────────────────────── */
+const INTENSITY_STYLES = {
+  Gentle:   { bg: "#eef6f0", color: "#167754", border: "#c0decb" },
+  Moderate: { bg: "#fdf8ec", color: "#8c6d23", border: "#f0dfb5" },
+  Heavy:    { bg: "#fdf2f0", color: "#a93226", border: "#f5c6cb" },
+};
+
 function MoodCard({ entry, index }) {
-  const meta = MOOD_META[entry.mood] || { emoji: entry.note || "🙂", color: "#167754", bg: "#eef6f0", border: "#c0decb", label: entry.mood };
+  const meta = MOOD_META[entry.mood] || { emoji: "🙂", color: "#167754", bg: "#eef6f0", border: "#c0decb", label: entry.mood };
   const { date, time } = fmt(entry.timestamp?.seconds);
+  const intensityStyle = INTENSITY_STYLES[entry.note];
 
   return (
     <div
@@ -148,7 +172,27 @@ function MoodCard({ entry, index }) {
 
       {/* Content */}
       <div className="qalb-mood-body">
-        <span className="qalb-mood-name" style={{ color: meta.color }}>{meta.label}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <span className="qalb-mood-name" style={{ color: meta.color }}>{meta.label}</span>
+          {intensityStyle && (
+            <span style={{
+              padding: "2px 8px",
+              borderRadius: 999,
+              fontSize: 10,
+              fontWeight: 700,
+              background: intensityStyle.bg,
+              color: intensityStyle.color,
+              border: `1px solid ${intensityStyle.border}`,
+            }}>
+              {entry.note}
+            </span>
+          )}
+          {meta.core && (
+            <span style={{ fontSize: 10.5, color: "#718276", fontStyle: "italic" }}>
+              · {meta.core}
+            </span>
+          )}
+        </div>
         <div className="qalb-mood-time-row">
           <svg width="11" height="11" viewBox="0 0 10 10" fill="none">
             <circle cx="5" cy="5" r="4" stroke="#718276" strokeWidth="0.9"/>
@@ -170,13 +214,14 @@ export default function MoodHistory({ user }) {
   const [moods, setMoods]     = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter]   = useState("All");
+  const [coreFilter, setCoreFilter] = useState("All");
 
   useEffect(() => {
     if (!user) return;
     (async () => {
       try {
         const data = await getUserMoods(user.uid);
-        setMoods(data.sort((a, b) => b.timestamp.seconds - a.timestamp.seconds));
+        setMoods(data.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0)));
       } catch (err) {
         console.error(err);
       } finally {
@@ -185,7 +230,18 @@ export default function MoodHistory({ user }) {
     })();
   }, [user]);
 
-  const visible = filter === "All" ? moods : moods.filter(m => m.mood === filter);
+  const visible = moods.filter(m => {
+    if (coreFilter !== "All" && MOOD_META[m.mood]?.core !== coreFilter) return false;
+    if (filter !== "All" && m.mood !== filter) return false;
+    return true;
+  });
+
+  const coreCounts = CORE_MOOD_STATES.map(core => ({
+    ...core,
+    count: moods.filter(e => MOOD_META[e.mood]?.core === core.id).length,
+  })).filter(c => c.count > 0);
+  const topCore = [...coreCounts].sort((a, b) => b.count - a.count)[0] || null;
+  const heavyCount = moods.filter(e => e.note === "Heavy").length;
 
   /* Group by month */
   const grouped = visible.reduce((acc, m) => {
@@ -236,14 +292,98 @@ export default function MoodHistory({ user }) {
             <p className="qalb-mh-subtitle">
               {loading ? "Loading…" : `${moods.length} moment${moods.length !== 1 ? "s" : ""} recorded`}
             </p>
+            {!loading && moods.length > 0 && (
+              <TabAyahBanner
+                arabic="أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ"
+                translation="Verily, in the remembrance of Allah do hearts find rest."
+                reference="Surah Ar-Ra'd 13:28"
+              />
+            )}
           </header>
 
-          {/* ── DONUT CHART ── */}
+          {/* ── DONUT CHART + CORE STATE TRENDS ── */}
           {!loading && moods.length > 0 && (
             <div className="qalb-chart-card">
               <div className="qalb-card-top-rule" />
-              <p className="qalb-chart-title">Overview</p>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+                <p className="qalb-chart-title" style={{ marginBottom: 0 }}>Heart Overview</p>
+                <Link
+                  to="/"
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: "#167754",
+                    textDecoration: "none",
+                    padding: "4px 10px",
+                    borderRadius: 999,
+                    background: "#eef6f0",
+                  }}
+                >
+                  + Log state
+                </Link>
+              </div>
+
+              {topCore && (
+                <div style={{
+                  marginBottom: 16,
+                  padding: "10px 12px",
+                  borderRadius: 12,
+                  background: "#f8fbf7",
+                  border: "1px solid #e0e9dd",
+                  fontSize: 12.5,
+                  lineHeight: 1.5,
+                  color: "#2d4537",
+                }}>
+                  Most frequent state: <strong style={{ color: topCore.color }}>{topCore.emoji} {topCore.label} ({topCore.sub})</strong>
+                  {heavyCount > 0 && (
+                    <span style={{ color: "#687b6f" }}> · {heavyCount} heavy moment{heavyCount !== 1 ? "s" : ""}</span>
+                  )}
+                </div>
+              )}
+
               <MoodDonut moods={moods} />
+
+              {/* Interactive Core State Filter Pills */}
+              {coreCounts.length > 0 && (
+                <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid #edf1ea" }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#718276", marginBottom: 8 }}>
+                    Filter by Core State
+                  </div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                    {coreCounts.map(core => {
+                      const active = coreFilter === core.id;
+                      return (
+                        <button
+                          key={core.id}
+                          type="button"
+                          onClick={() => {
+                            setCoreFilter(active ? "All" : core.id);
+                            setFilter("All");
+                          }}
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 5,
+                            padding: "5px 11px",
+                            borderRadius: 999,
+                            background: active ? core.color : core.bg,
+                            border: `1px solid ${active ? core.color : core.border}`,
+                            color: active ? "#ffffff" : core.color,
+                            fontSize: 11,
+                            fontWeight: 600,
+                            cursor: "pointer",
+                            transition: "all 0.18s",
+                          }}
+                        >
+                          <span>{core.emoji}</span>
+                          <span>{core.label}</span>
+                          <span style={{ opacity: 0.85 }}>({core.count})</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -251,8 +391,11 @@ export default function MoodHistory({ user }) {
           {!loading && moods.length > 0 && (
             <div className="qalb-chip-row">
               <button
-                className={`qalb-chip${filter === "All" ? " active" : ""}`}
-                onClick={() => setFilter("All")}
+                className={`qalb-chip${filter === "All" && coreFilter === "All" ? " active" : ""}`}
+                onClick={() => {
+                  setFilter("All");
+                  setCoreFilter("All");
+                }}
               >
                 All
               </button>
@@ -261,7 +404,10 @@ export default function MoodHistory({ user }) {
                   key={m}
                   className={`qalb-chip${filter === m ? " active" : ""}`}
                   style={filter === m ? { borderColor: MOOD_META[m].border, color: MOOD_META[m].color, background: MOOD_META[m].bg } : {}}
-                  onClick={() => setFilter(m)}
+                  onClick={() => {
+                    setFilter(filter === m ? "All" : m);
+                    setCoreFilter("All");
+                  }}
                 >
                   {MOOD_META[m].emoji} {m}
                 </button>
@@ -300,7 +446,9 @@ export default function MoodHistory({ user }) {
                 <span>{month}</span>
                 <div className="qalb-month-rule" />
               </div>
-              {entries.map((e, i) => <MoodCard key={e.id} entry={e} index={i} />)}
+              <div className="qalb-history-grid">
+                {entries.map((e, i) => <MoodCard key={e.id} entry={e} index={i} />)}
+              </div>
             </section>
           ))}
 
@@ -314,6 +462,7 @@ export default function MoodHistory({ user }) {
             { to: "/mood-history",      label: "Mood",    Icon: NavMood    },
             { to: "/journal-history",   label: "Journal", Icon: NavJournal },
             { to: "/reflection-history",label: "Reflect", Icon: NavReflect },
+            { to: "/coming-soon",       label: "Coming Soon", Icon: NavSoon    },
           ].map(({ to, label, Icon }) => {
             const active = location.pathname === to;
             return (
@@ -387,7 +536,7 @@ const STYLES = `
 .qalb-donut-legend { flex: 1; display: flex; flex-direction: column; gap: 8px; }
 .qalb-legend-row { display: flex; align-items: center; gap: 7px; }
 .qalb-legend-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-.qalb-legend-name { font-size: 12px; color: #1d3129; font-weight: 500; min-width: 52px; }
+.qalb-legend-name { font-size: 11.5px; color: #1d3129; font-weight: 600; min-width: 82px; }
 .qalb-legend-count { font-family: 'Playfair Display', serif; font-size: 13px; font-weight: 600; color: #718276; min-width: 18px; text-align: right; }
 .qalb-legend-bar-track { flex: 1; height: 4px; background: #eef2ec; border-radius: 999px; overflow: hidden; }
 .qalb-legend-bar-fill { height: 100%; border-radius: 999px; transition: width 0.6s ease; opacity: 0.9; }
@@ -443,31 +592,46 @@ const STYLES = `
 /* Nav */
 .qalb-nav {
   position: fixed; bottom: 0; left: 0; right: 0;
-  display: flex; justify-content: space-around; align-items: center;
-  padding: 10px 0 18px;
-  background: rgba(245,247,240,0.95);
-  border-top: 1px solid #e2e9df;
+  display: flex; justify-content: center; align-items: center; gap: 2px;
+  padding: 8px max(10px, calc((100% - 560px) / 2)) 14px;
+  background: rgba(245,247,240,0.96);
+  border-top: 1px solid #dce5da;
+  box-shadow: 0 -4px 20px rgba(17,33,23,0.04);
   backdrop-filter: blur(16px);
   z-index: 50;
 }
 .qalb-nav-item {
+  flex: 1; min-width: 0;
   display: flex; flex-direction: column; align-items: center; gap: 3px;
-  cursor: pointer; padding: 4px 16px; text-decoration: none; transition: all 0.2s;
+  cursor: pointer; padding: 4px 2px; border-radius: 12px; text-decoration: none; transition: all 0.2s;
 }
 .qalb-nav-icon-wrap {
-  width: 36px; height: 36px; border-radius: 12px;
+  width: 38px; height: 34px; border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
-  transition: background 0.2s;
+  border: 1px solid transparent;
+  transition: background 0.2s, border-color 0.2s;
 }
-.qalb-nav-item.active .qalb-nav-icon-wrap { background: #eef6f0; }
+.qalb-nav-item:hover .qalb-nav-icon-wrap { background: rgba(22,119,84,0.06); }
+.qalb-nav-item.active .qalb-nav-icon-wrap { background: #e6f4ea; border-color: rgba(22,119,84,0.16); }
+.qalb-nav-item:focus-visible { outline: 2px solid #167754; outline-offset: 2px; }
 .qalb-nav-label {
-  font-size: 10px; font-weight: 500; letter-spacing: 0.04em;
-  color: #718276; font-family: 'DM Sans', sans-serif; text-transform: uppercase;
+  font-size: 9.5px; font-weight: 500; letter-spacing: 0.03em;
+  color: #65776c; font-family: 'DM Sans', sans-serif; text-transform: uppercase; white-space: nowrap;
 }
 .qalb-nav-item.active .qalb-nav-label { color: #167754; font-weight: 700; }
 
 @keyframes fadeSlide { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes cardIn    { from { opacity: 0; transform: translateY(8px);  } to { opacity: 1; transform: translateY(0); } }
+
+.qalb-history-grid { display: flex; flex-direction: column; gap: 9px; }
+@media (min-width: 768px) {
+  .qalb-app { max-width: 960px; }
+  .qalb-history-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; align-items: start; }
+  .qalb-mood-card { margin-bottom: 0; }
+}
+@media (min-width: 1024px) {
+  .qalb-history-grid { grid-template-columns: repeat(3, 1fr); }
+}
 @keyframes shimmer   { 0%,100% { opacity: 0.75; } 50% { opacity: 1; } }
 @keyframes pulse     { 0%,100% { opacity: 0.3; transform: scale(0.85); } 50% { opacity: 1; transform: scale(1); } }
 `;

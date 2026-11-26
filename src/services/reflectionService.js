@@ -2,10 +2,11 @@ import { db } from "./firebase.js";
 import {
   collection,
   addDoc,
+  doc,
+  updateDoc,
   query,
   where,
   getDocs,
-  orderBy
 } from "firebase/firestore";
 
 /* ---------------- SAVE REFLECTION ---------------- */
@@ -21,6 +22,9 @@ export const saveReflection = async (userId, data) => {
       text: data.text,
       journalContent: data.journalContent || data.journal || "",
       mood: data.mood || "",
+      verifiedAyah: data.verifiedAyah || null,
+      bookmarked: false,
+      actionCompleted: false,
       createdAt: now,
       timestamp: now,
     });
@@ -30,6 +34,17 @@ export const saveReflection = async (userId, data) => {
     return docRef;
   } catch (err) {
     console.error("❌ Error saving reflection:", err);
+    throw err;
+  }
+};
+
+/* ---------------- UPDATE REFLECTION FLAG ---------------- */
+export const toggleReflectionFlag = async (reflectionId, field, value) => {
+  try {
+    const refDoc = doc(db, "reflections", reflectionId);
+    await updateDoc(refDoc, { [field]: value });
+  } catch (err) {
+    console.error(`❌ Error updating ${field}:`, err);
     throw err;
   }
 };

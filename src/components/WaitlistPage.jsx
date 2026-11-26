@@ -16,10 +16,11 @@ function WaitlistPage() {
   const [followupStatus, setFollowupStatus] = useState("idle");
 
   const interestOptions = [
-    "Journaling",
-    "Emotional awareness",
-    "Guided reflection",
-    "Islamic reflection practices",
+    "Healing emotional exhaustion",
+    "Spiritual grounding & Sakīnah",
+    "Faith-based AI reflection",
+    "Deeper Quranic ayah resonance",
+    "Mindful Islamic journaling",
   ];
 
   async function handleSubmit(event) {
@@ -70,143 +71,209 @@ function WaitlistPage() {
   }
 
   return (
-    <main className="waitlist-page">
-      <header className="waitlist-header">
-        <Link className="landing-brand" to="/" aria-label="QalbSense home">
-          <span className="landing-brand-mark" aria-hidden="true">
-            <svg viewBox="0 0 36 36" fill="none">
-              <path d="M18 4.5 21.3 13l8.2-3.1-3.1 8.2 8.5 3.3-8.5 3.3 3.1 8.2-8.2-3.1L18 36l-3.3-8.2-8.2 3.1 3.1-8.2L1 19.4l8.5-3.3-3.1-8.2 8.2 3.1L18 4.5Z" />
-              <circle cx="18" cy="19.4" r="5.1" />
-            </svg>
-          </span>
-          <span>qalb<span className="landing-brand-accent">sense</span></span>
-        </Link>
-        <Link className="waitlist-back-link" to="/">Back to home</Link>
-      </header>
+    <main className="qs-waitlist-page">
+      <div className="qs-glow-bg" aria-hidden="true" />
 
-      <section className="waitlist-content" aria-labelledby="waitlist-title">
-        <div className="waitlist-mark" aria-hidden="true">۞</div>
-        <span className="landing-section-kicker">A little space for your heart</span>
-        {status === "success" || status === "duplicate" ? (
-          <div className="waitlist-success" role="status">
-            <h1 id="waitlist-title">
-              {status === "duplicate"
-                ? "You're already on the list."
-                : "You're on the list!"}
-            </h1>
-            <p>
-              {status === "duplicate"
-                ? "We'll be in touch soon."
-                : "We'll be in touch when QalbSense is ready."}
-            </p>
-
-            {!showFollowup ? (
-              <button
-                className="landing-button landing-button-primary waitlist-followup-start"
-                type="button"
-                onClick={() => setShowFollowup(true)}
-              >
-                Help shape QalbSense <span aria-hidden="true">→</span>
-              </button>
-            ) : followupStatus === "success" ? (
-              <p className="waitlist-followup-thanks" role="status">
-                Thank you. Your feedback helps us build something meaningful.
-              </p>
-            ) : (
-              <form className="waitlist-followup" onSubmit={handleFollowupSubmit}>
-                <h2>What interests you most?</h2>
-                <div className="waitlist-interest-grid">
-                  {interestOptions.map((interest) => (
-                    <button
-                      key={interest}
-                      className={interests.includes(interest) ? "selected" : ""}
-                      type="button"
-                      aria-pressed={interests.includes(interest)}
-                      onClick={() => toggleInterest(interest)}
-                    >
-                      {interest}
-                    </button>
-                  ))}
-                </div>
-                {followupStatus === "error" && (
-                  <p className="waitlist-error" role="alert">
-                    Something went wrong. Please try again.
-                  </p>
-                )}
-                <div className="waitlist-followup-actions">
-                  <button
-                    className="landing-button landing-button-primary"
-                    type="submit"
-                    disabled={interests.length === 0 || followupStatus === "submitting"}
-                  >
-                    {followupStatus === "submitting" ? "Submitting…" : "Submit"}
-                  </button>
-                  <button
-                    className="waitlist-skip"
-                    type="button"
-                    onClick={() => setShowFollowup(false)}
-                  >
-                    Skip for now
-                  </button>
-                </div>
-              </form>
-            )}
-          </div>
-        ) : (
-          <>
-            <h1 id="waitlist-title">Begin your journey with QalbSense.</h1>
-            <p className="waitlist-description">
-              Be among the first to experience a more intentional approach to
-              reflection and wellbeing.
-            </p>
-            <form className="waitlist-form" onSubmit={handleSubmit}>
-              <label htmlFor="waitlist-email">Email address</label>
-              <div className="waitlist-input-row">
-                <input
-                  id="waitlist-email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  required
-                  disabled={status === "submitting"}
-                  aria-invalid={status === "invalid"}
+      <div className="qs-wrap">
+        {/* ── TOP NAV ── */}
+        <nav className="qs-nav">
+          <Link className="qs-logo" to="/" aria-label="QalbSense home">
+            <span className="qs-logo-mark" aria-hidden="true">
+              <svg viewBox="0 0 36 36" fill="none">
+                <path
+                  d="M18 4.5 21.3 13l8.2-3.1-3.1 8.2 8.5 3.3-8.5 3.3 3.1 8.2-8.2-3.1L18 36l-3.3-8.2-8.2 3.1 3.1-8.2L1 19.4l8.5-3.3-3.1-8.2 8.2 3.1L18 4.5Z"
+                  fill="#00e599"
                 />
-                <button
-                  className="landing-button landing-button-primary"
-                  type="submit"
-                  disabled={status === "submitting"}
-                >
-                  {status === "submitting" ? "Adding you…" : "Join the Waitlist"}
-                  <span aria-hidden="true">→</span>
-                </button>
-              </div>
-              <p className="waitlist-note">
-                By joining, you agree to receive updates about QalbSense.
-                {" "}
-                <Link to="/#privacy">See our Privacy Policy.</Link>
-              </p>
-              <p className="waitlist-error" role="alert" aria-live="polite">
-                {(status === "error" || status === "invalid") ? errorMessage : ""}
-              </p>
-            </form>
-          </>
-        )}
-      </section>
+                <circle cx="18" cy="19.4" r="5.1" fill="#050d09" />
+              </svg>
+            </span>
+            <span>qalb<span className="qs-logo-accent">sense</span></span>
+          </Link>
 
-      <footer className="waitlist-footer">
-        <div className="waitlist-footer-brand">
-          <span>QalbSense is a product by Fitrah.</span>
-          <span>© 2026 Fitrah. All rights reserved.</span>
-        </div>
-        <nav aria-label="Footer navigation">
-          <Link to="/#privacy">Privacy Policy</Link>
-          <Link to="/#terms">Terms</Link>
-          <Link to="/#foundation">Contact</Link>
+          <div className="qs-nav-actions">
+            <Link className="qs-nav-back" to="/">← Home</Link>
+            <div className="qs-nav-pill">
+              <span className="qs-pulse-dot" aria-hidden="true" />
+              <span>Founding Cohort Open</span>
+            </div>
+          </div>
         </nav>
-      </footer>
+
+        {/* ── HERO ── */}
+        <section className="qs-hero" aria-labelledby="qs-hero-title">
+          <div className="qs-hero-eyebrow">
+            <span>✦</span>
+            <span>The modern world fractured your peace. We are building the sanctuary to reclaim it.</span>
+          </div>
+
+          <h1 id="qs-hero-title" className="qs-hero-title">
+            An unsettled heart finds rest.<br />
+            <span className="hl">Something profound is coming.</span>
+          </h1>
+
+          <p className="qs-subtitle">
+            <strong>QalbSense</strong> is a breakthrough spiritual intelligence sanctuary designed to heal the scattered soul.
+            We are weaving classical Islamic psychology (<em>Tazkiyat an-Nafs</em>), deep emotional awareness, and empathetic AI reflection
+            to transform daily emotional chaos into unshakable <strong>Sakīnah</strong>.
+            Not another habit tracker. A step closer to a sound heart (<em>Qalbin Salīm</em>) — by the will of Allah.
+          </p>
+
+          {/* ── FORM OR SUCCESS CARD ── */}
+          {status === "success" || status === "duplicate" ? (
+            <div className="qs-success-card" role="status">
+              <div className="qs-s-icon" aria-hidden="true">✓</div>
+              <h3>
+                {status === "duplicate"
+                  ? "You're already in the Founding Cohort."
+                  : "You're on the Founding List!"}
+              </h3>
+              <p>
+                {status === "duplicate"
+                  ? "Your early reservation is confirmed. We will reach out as private access waves unlock."
+                  : "Your spot is reserved. Watch your inbox — something extraordinary is preparing to launch."}
+              </p>
+
+              <div className="qs-signup-benefit">
+                <strong>What you unlock:</strong>
+                Priority Wave 1 beta access, a direct line to the founding creators, and grandfathered lifetime founding privileges.
+              </div>
+
+              {!showFollowup ? (
+                <div style={{ marginTop: 20 }}>
+                  <button
+                    className="qs-btn-sub"
+                    type="button"
+                    onClick={() => setShowFollowup(true)}
+                  >
+                    Help shape QalbSense →
+                  </button>
+                </div>
+              ) : followupStatus === "success" ? (
+                <p style={{ marginTop: 18, color: "var(--qs-accent)", fontSize: 13 }} role="status">
+                  ✓ Thank you. Your input directly influences what we build next.
+                </p>
+              ) : (
+                <form className="qs-followup-box" onSubmit={handleFollowupSubmit}>
+                  <p className="qs-followup-title">What part of your inner life needs the most healing?</p>
+                  <div className="qs-interest-grid">
+                    {interestOptions.map((item) => (
+                      <button
+                        key={item}
+                        className={`qs-interest-btn${interests.includes(item) ? " selected" : ""}`}
+                        type="button"
+                        aria-pressed={interests.includes(item)}
+                        onClick={() => toggleInterest(item)}
+                      >
+                        {item}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="qs-followup-actions">
+                    <button
+                      className="qs-btn-sub"
+                      type="submit"
+                      disabled={interests.length === 0 || followupStatus === "submitting"}
+                    >
+                      {followupStatus === "submitting" ? "Saving…" : "Save Preferences"}
+                    </button>
+                    <button
+                      className="qs-btn-skip"
+                      type="button"
+                      onClick={() => setShowFollowup(false)}
+                    >
+                      Skip
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          ) : (
+            <div className="qs-form-box">
+              <form onSubmit={handleSubmit} noValidate>
+                <div className="qs-email-row">
+                  <input
+                    type="email"
+                    name="email"
+                    autoComplete="email"
+                    inputMode="email"
+                    placeholder="Enter your personal email..."
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    disabled={status === "submitting"}
+                    className={status === "invalid" ? "err" : ""}
+                    aria-label="Email address"
+                  />
+                  <button
+                    className="qs-cta-btn"
+                    type="submit"
+                    disabled={status === "submitting"}
+                  >
+                    {status === "submitting" ? (
+                      <div className="qs-spinner" aria-label="Loading..." />
+                    ) : (
+                      <>
+                        <span>Get Early Access</span>
+                        <span aria-hidden="true">→</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {errorMessage && (
+                  <div className="qs-err-msg" role="alert">
+                    {errorMessage}
+                  </div>
+                )}
+
+                <p className="qs-form-micro">
+                  Strictly private. Zero noise. Founding cohort receives exclusive beta access + lifetime founder privileges.
+                </p>
+              </form>
+            </div>
+          )}
+
+          {/* ── CURIOSITY TEASERS (Something Big is Coming) ── */}
+          <div className="qs-teasers">
+            <div className="qs-teaser-card">
+              <span className="qs-teaser-tag">01 / The Blindspot</span>
+              <h2 className="qs-teaser-title">Traditional apps track numbers. None understand your soul.</h2>
+              <p className="qs-teaser-body">
+                We live in chronic sensory overload. Streak counters and generic timers treat symptoms, not the underlying spiritual fatigue in your heart.
+              </p>
+            </div>
+
+            <div className="qs-teaser-card">
+              <span className="qs-teaser-tag">02 / The Breakthrough</span>
+              <h2 className="qs-teaser-title">Sacred wisdom meets empathetic intelligence.</h2>
+              <p className="qs-teaser-body">
+                An intelligent companion that listens to your unspoken burdens, grounding you with tailored Quranic resonance and classical Tazkiyah frameworks.
+              </p>
+            </div>
+
+            <div className="qs-teaser-card">
+              <span className="qs-teaser-tag">03 / The Private Release</span>
+              <h2 className="qs-teaser-title">Strictly staggered founding cohort.</h2>
+              <p className="qs-teaser-body">
+                Access opens in small, curated private waves to protect the depth of the experience. Early members test and shape the future of QalbSense.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* ── FOOTER ── */}
+        <footer className="qs-footer">
+          <div className="qs-footer-copy">
+            © 2026 QalbSense · Your heart is a trust.
+          </div>
+          <div className="qs-footer-links">
+            <Link to="/">Home</Link>
+            <Link to="/#privacy">Privacy</Link>
+            <Link to="/#terms">Terms</Link>
+          </div>
+        </footer>
+      </div>
     </main>
   );
 }

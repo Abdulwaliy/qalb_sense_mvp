@@ -1,24 +1,18 @@
 import { useState, useEffect, useRef } from "react";
 import { logMood } from "../services/moodService.js";
 import { addJournal } from "../services/journalService.js";
-import { saveReflection } from "../services/reflectionService.js";
-import { generateReflection } from "../services/aiService.js";
+import { saveReflection, toggleReflectionFlag } from "../services/reflectionService.js";
+import { generateReflection, fetchMoodAyah } from "../services/aiService.js";
 import { Link, useLocation } from "react-router-dom";
 import { logout } from "../services/authService.js";
 import { getLandingUrl } from "../utils/domain.js";
+import StructuredReflection from "./StructuredReflection.jsx";
+import AyahActions from "./AyahActions.jsx";
+import { MOOD_OPTIONS, CORE_MOOD_STATES, INTENSITY_OPTIONS, JOURNAL_PROMPTS } from "../constants/moods.js";
 
 /* ─────────────────────────────────────────
    DATA
 ───────────────────────────────────────── */
-const MOOD_OPTIONS = [
-  { emoji: "😄", label: "Happy" },
-  { emoji: "😢", label: "Sad" },
-  { emoji: "😡", label: "Angry" },
-  { emoji: "😰", label: "Anxious" },
-  { emoji: "😌", label: "Calm" },
-  { emoji: "😴", label: "Tired" },
-];
-
 const DAYS   = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
@@ -51,26 +45,46 @@ const IconStar = () => (
 );
 const NavHome = ({ active }) => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-    <path d="M10 2L3 8v10h5v-5h4v5h5V8L10 2z"
-      stroke={active ? "#167754" : "#718276"} strokeWidth="1.4" strokeLinejoin="round" />
+    <path d="M3 9.2 10 3.2l7 6v7.1a1.5 1.5 0 0 1-1.5 1.5H4.5A1.5 1.5 0 0 1 3 16.3V9.2Z"
+      fill={active ? "rgba(22, 119, 84, 0.14)" : "none"}
+      stroke={active ? "#167754" : "#6b7d72"} strokeWidth="1.55" strokeLinejoin="round" />
+    <path d="M8 17.8v-4.2a2 2 0 0 1 4 0v4.2"
+      stroke={active ? "#167754" : "#6b7d72"} strokeWidth="1.55" strokeLinecap="round" />
   </svg>
 );
 const NavMood = ({ active }) => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-    <circle cx="10" cy="8" r="5" stroke={active ? "#167754" : "#718276"} strokeWidth="1.4" />
-    <path d="M10 13v5M7 16h6" stroke={active ? "#167754" : "#718276"} strokeWidth="1.4" strokeLinecap="round" />
+    <path d="M10 16.6s-5.8-3.5-6.8-7.3a3.7 3.7 0 0 1 6.8-3 3.7 3.7 0 0 1 6.8 3c-1 3.8-6.8 7.3-6.8 7.3Z"
+      fill={active ? "rgba(22, 119, 84, 0.16)" : "none"}
+      stroke={active ? "#167754" : "#6b7d72"} strokeWidth="1.55" strokeLinejoin="round" />
   </svg>
 );
 const NavJournal = ({ active }) => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-    <rect x="4" y="3" width="12" height="14" rx="2" stroke={active ? "#167754" : "#718276"} strokeWidth="1.4" />
-    <path d="M7 8h6M7 11h4" stroke={active ? "#167754" : "#718276"} strokeWidth="1.4" strokeLinecap="round" />
+    <path d="M3.2 4.8A1.8 1.8 0 0 1 5 3h3.6c.8 0 1.4.6 1.4 1.4v12.2c-.5-.5-1.2-.8-2-.8H5a1.8 1.8 0 0 1-1.8-1.8V4.8Z"
+      fill={active ? "rgba(22, 119, 84, 0.14)" : "none"}
+      stroke={active ? "#167754" : "#6b7d72"} strokeWidth="1.5" strokeLinejoin="round" />
+    <path d="M16.8 4.8A1.8 1.8 0 0 0 15 3h-3.6c-.8 0-1.4.6-1.4 1.4v12.2c.5-.5 1.2-.8 2-.8H15a1.8 1.8 0 0 0 1.8-1.8V4.8Z"
+      fill={active ? "rgba(22, 119, 84, 0.14)" : "none"}
+      stroke={active ? "#167754" : "#6b7d72"} strokeWidth="1.5" strokeLinejoin="round" />
   </svg>
 );
 const NavReflect = ({ active }) => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-    <polygon points="10,2 12,7.5 18,7.5 13.5,11.5 15.5,17 10,13 4.5,17 6.5,11.5 2,7.5 8,7.5"
-      stroke={active ? "#167754" : "#718276"} strokeWidth="1.4" strokeLinejoin="round" />
+    <path d="M10 2.5 11.7 8.3 17.5 10l-5.8 1.7L10 17.5l-1.7-5.8L2.5 10l5.8-1.7L10 2.5Z"
+      fill={active ? "rgba(22, 119, 84, 0.16)" : "none"}
+      stroke={active ? "#167754" : "#6b7d72"} strokeWidth="1.5" strokeLinejoin="round" />
+    <circle cx="15.4" cy="4.6" r="1" fill={active ? "#167754" : "#6b7d72"} />
+  </svg>
+);
+const NavSoon = ({ active }) => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <rect x="4.5" y="8.8" width="11" height="8" rx="2.4"
+      fill={active ? "rgba(22, 119, 84, 0.16)" : "none"}
+      stroke={active ? "#167754" : "#6b7d72"} strokeWidth="1.55" />
+    <path d="M7 8.8V6.7a3 3 0 0 1 6 0v2.1"
+      stroke={active ? "#167754" : "#6b7d72"} strokeWidth="1.55" strokeLinecap="round" />
+    <circle cx="10" cy="12.8" r="1.1" fill={active ? "#167754" : "#6b7d72"} />
   </svg>
 );
 
@@ -144,10 +158,47 @@ function Toast({ message, visible }) {
 export default function Dashboard({ user }) {
   const location = useLocation();
 
+  const [selectedCore, setSelectedCore]       = useState(null);
   const [selectedMood, setSelectedMood]       = useState(null);
-  const [journalContent, setJournalContent]   = useState("");
+  const [selectedIntensity, setSelectedIntensity] = useState("Moderate");
+  const draftKey = `qalbsense_journal_draft_${user?.uid || "guest"}`;
+  const [journalContent, setJournalContent]   = useState(() => {
+    try { return localStorage.getItem(`qalbsense_journal_draft_${user?.uid || "guest"}`) || ""; } catch { return ""; }
+  });
+  const [promptIdx, setPromptIdx]             = useState(0);
   const [reflection, setReflection]           = useState("");
+  const [verifiedAyah, setVerifiedAyah]       = useState(null);
+  const [savedReflectionId, setSavedReflectionId] = useState(null);
+  const [reflectionFeedback, setReflectionFeedback] = useState(null);
+  const [scopeNotice, setScopeNotice]         = useState("");
+  const [closingDua, setClosingDua]           = useState("");
+  const [duaSaved, setDuaSaved]               = useState(false);
   const [isReflecting, setIsReflecting]       = useState(false);
+  const [isListening, setIsListening]         = useState(false);
+  const textareaRef                           = useRef(null);
+  const recognitionRef                        = useRef(null);
+  const speechSupported = typeof window !== "undefined" && Boolean(window.SpeechRecognition || window.webkitSpeechRecognition);
+  const ayahStorageKey = `qalbsense_last_ayah_${user?.uid || "guest"}`;
+  const [ayahOfTheDay, setAyahOfTheDay]       = useState(() => {
+    try {
+      const saved = localStorage.getItem(`qalbsense_last_ayah_${user?.uid || "guest"}`);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed?.arabic) return parsed;
+      }
+    } catch {
+      // ignore storage errors
+    }
+    return {
+      verseKey: "91:9",
+      arabic: "قَدْ أَفْلَحَ مَن زَكَّاهَا",
+      translation: "He has succeeded who purifies the soul.",
+      source: "Ash-Shams 91:9",
+      theme: "At-Tazkiyah · Soul Purification",
+      audioUrl: "https://verses.quran.com/Alafasy/mp3/091009.mp3",
+      verified: false,
+    };
+  });
   const [toast, setToast]                     = useState({ message: "", visible: false });
   const toastTimer                            = useRef(null);
   const reflectionRef                         = useRef(null);
@@ -162,12 +213,59 @@ export default function Dashboard({ user }) {
     toastTimer.current = setTimeout(() => setToast(t => ({ ...t, visible: false })), 2800);
   };
 
-  useEffect(() => () => clearTimeout(toastTimer.current), []);
+  useEffect(() => () => {
+    clearTimeout(toastTimer.current);
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+  }, []);
+
+  useEffect(() => {
+    setPromptIdx(0);
+    if (!selectedMood) {
+      try {
+        if (localStorage.getItem(ayahStorageKey)) return;
+      } catch {
+        // ignore storage errors
+      }
+    }
+    let cancelled = false;
+    fetchMoodAyah(selectedMood || "neutral").then((data) => {
+      if (!cancelled && data?.arabic) {
+        setAyahOfTheDay(data);
+        try {
+          localStorage.setItem(ayahStorageKey, JSON.stringify(data));
+        } catch {
+          // ignore storage errors
+        }
+      }
+    });
+    return () => { cancelled = true; };
+  }, [selectedMood, ayahStorageKey]);
+
+  useEffect(() => {
+    try {
+      if (journalContent) {
+        localStorage.setItem(draftKey, journalContent);
+      } else {
+        localStorage.removeItem(draftKey);
+      }
+    } catch {
+      // ignore storage errors
+    }
+  }, [journalContent, draftKey]);
+
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.max(120, Math.min(el.scrollHeight, 340))}px`;
+  }, [journalContent]);
 
   /* ── Mood ── */
   const handleMoodSelect = async (mood) => {
     try {
-      await logMood(user.uid, mood.label, mood.emoji);
+      await logMood(user.uid, mood.label, selectedIntensity);
       setSelectedMood(mood.label);
       showToast(`Mood logged: ${mood.label}`);
     } catch (err) {
@@ -176,11 +274,59 @@ export default function Dashboard({ user }) {
     }
   };
 
+  /* ── Voice Journaling ── */
+  const handleToggleVoice = () => {
+    if (!speechSupported) return;
+    if (isListening && recognitionRef.current) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+      return;
+    }
+
+    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRec();
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.lang = navigator.language || "en-US";
+
+    recognition.onresult = (event) => {
+      let transcript = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        if (event.results[i].isFinal) {
+          transcript += event.results[i][0].transcript;
+        }
+      }
+      const clean = transcript.trim();
+      if (clean) {
+        setJournalContent((prev) => (prev ? `${prev.trimEnd()} ${clean}` : clean));
+      }
+    };
+
+    recognition.onerror = (event) => {
+      setIsListening(false);
+      if (event.error === "not-allowed") {
+        showToast("Microphone permission denied");
+      } else if (event.error !== "aborted") {
+        showToast("Voice input paused");
+      }
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
+    setIsListening(true);
+    showToast("Listening… speak from your heart");
+  };
+
   /* ── Journal ── */
   const handleSaveJournal = async () => {
     if (!journalContent.trim()) return;
     try {
       await addJournal(user.uid, journalContent);
+      try { localStorage.removeItem(draftKey); } catch {}
       showToast("Journal entry saved ✓");
     } catch (err) {
       console.error(err);
@@ -190,29 +336,108 @@ export default function Dashboard({ user }) {
 
   /* ── Reflection ── */
   const handleReflection = async () => {
-    if (!journalContent.trim() || isReflecting) return;
+    const trimmed = journalContent.trim();
+    if (!trimmed || isReflecting) return;
+
+    setScopeNotice("");
+    const words = trimmed.split(/\s+/).filter(Boolean);
+    if (trimmed.length < 10 || words.length < 2 || /(.)\1{5,}/.test(trimmed)) {
+      setScopeNotice("Please share a few honest words about what is on your heart or how your day feels so QalbSense can reflect with you.");
+      return;
+    }
+
     setIsReflecting(true);
     try {
       const result = await generateReflection({
         mood: selectedMood || "neutral",
+        intensity: selectedMood ? selectedIntensity : undefined,
         journal: journalContent,
-        userId: user.uid,
+        userId: user?.uid,
       });
+
+      if (result.outOfScope) {
+        setScopeNotice(
+          result.message ||
+            "QalbSense is a sanctuary for Muhāsabah, emotional awareness, and spiritual reflection. Share what is on your heart or how your day feels."
+        );
+        return;
+      }
+
       const text = result.reflection;
-      await saveReflection(user.uid, {
-        text,
-        journalContent,
-        mood: selectedMood || "neutral",
-      });
       setReflection(text);
-      showToast("Reflection generated & saved ✓");
+      setVerifiedAyah(result.verifiedAyah || null);
+      setSavedReflectionId(null);
+      setReflectionFeedback(null);
+      setClosingDua("");
+      setDuaSaved(false);
       setTimeout(() => reflectionRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 200);
+
+      try {
+        if (user?.uid) {
+          const [savedRef] = await Promise.all([
+            saveReflection(user.uid, {
+              text,
+              journalContent,
+              mood: selectedMood || "neutral",
+              verifiedAyah: result.verifiedAyah || null,
+            }),
+            addJournal(user.uid, journalContent, text),
+          ]);
+          if (savedRef?.id) setSavedReflectionId(savedRef.id);
+          try { localStorage.removeItem(draftKey); } catch {}
+          showToast("Reflection & journal saved ✓");
+        } else {
+          showToast("Reflection generated ✓");
+        }
+      } catch (saveErr) {
+        console.error("Failed to save reflection:", saveErr);
+        showToast("Reflection generated (could not save to history)");
+      }
     } catch (err) {
-      console.error(err);
-      showToast("Failed to generate reflection");
+      console.error("Reflection generation error:", err);
+      showToast(err?.message || "Failed to generate reflection");
     } finally {
       setIsReflecting(false);
     }
+  };
+
+  /* ── Closing Du'a & Reset ── */
+  const handleSaveDua = async () => {
+    if (!closingDua.trim()) return;
+    try {
+      if (user?.uid) {
+        await addJournal(user.uid, `🤲 Closing Du‘ā’: ${closingDua.trim()}`);
+      }
+      setDuaSaved(true);
+      showToast("Du‘ā’ saved — Āmīn 🤲");
+    } catch (err) {
+      console.error(err);
+      showToast("Could not save Du‘ā’");
+    }
+  };
+
+  const handleReflectionFeedback = async (val) => {
+    if (!savedReflectionId) return;
+    const next = reflectionFeedback === val ? null : val;
+    setReflectionFeedback(next);
+    try {
+      await toggleReflectionFlag(savedReflectionId, "feedback", next);
+      if (next) showToast("Thank you for your feedback");
+    } catch {
+      setReflectionFeedback(reflectionFeedback);
+    }
+  };
+
+  const handleNewCheckIn = () => {
+    setJournalContent("");
+    setReflection("");
+    setVerifiedAyah(null);
+    setSavedReflectionId(null);
+    setReflectionFeedback(null);
+    setScopeNotice("");
+    setClosingDua("");
+    setDuaSaved(false);
+    try { localStorage.removeItem(draftKey); } catch {}
   };
 
   const activeMood = MOOD_OPTIONS.find(m => m.label === selectedMood);
@@ -291,15 +516,20 @@ export default function Dashboard({ user }) {
         .qalb-reflection-star { position: absolute; top: 12px; right: 14px; color: #a48a49; font-size: 14px; opacity: 0.8; }
 
         /* Bottom Nav */
-        .qalb-nav { position: fixed; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-around; align-items: center; padding: 10px 0 18px; background: rgba(245,247,240,0.95); border-top: 1px solid #e2e9df; backdrop-filter: blur(16px); z-index: 50; }
-        .qalb-nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 4px 16px; text-decoration: none; transition: all 0.2s; }
-        .qalb-nav-icon-wrap { width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
-        .qalb-nav-item.active .qalb-nav-icon-wrap { background: #eef6f0; }
-        .qalb-nav-label { font-size: 10px; font-weight: 500; letter-spacing: 0.04em; color: #718276; font-family: 'DM Sans', sans-serif; text-transform: uppercase; }
+        .qalb-nav { position: fixed; bottom: 0; left: 0; right: 0; display: flex; justify-content: center; align-items: center; gap: 2px; padding: 8px max(10px, calc((100% - 560px) / 2)) 14px; background: rgba(245,247,240,0.96); border-top: 1px solid #dce5da; box-shadow: 0 -4px 20px rgba(17,33,23,0.04); backdrop-filter: blur(16px); z-index: 50; }
+        .qalb-nav-item { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 4px 2px; border-radius: 12px; text-decoration: none; transition: all 0.2s; }
+        .qalb-nav-icon-wrap { width: 38px; height: 34px; border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 1px solid transparent; transition: background 0.2s, border-color 0.2s; }
+        .qalb-nav-item:hover .qalb-nav-icon-wrap { background: rgba(22,119,84,0.06); }
+        .qalb-nav-item.active .qalb-nav-icon-wrap { background: #e6f4ea; border-color: rgba(22,119,84,0.16); }
+        .qalb-nav-item:focus-visible { outline: 2px solid #167754; outline-offset: 2px; }
+        .qalb-nav-label { font-size: 9.5px; font-weight: 500; letter-spacing: 0.03em; color: #65776c; font-family: 'DM Sans', sans-serif; text-transform: uppercase; white-space: nowrap; }
         .qalb-nav-item.active .qalb-nav-label { color: #167754; font-weight: 700; }
 
         /* Animations */
         @keyframes fadeSlide { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes stepPop { from { opacity: 0; transform: translateY(8px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .qalb-step-pop { animation: stepPop 0.32s cubic-bezier(0.22, 1, 0.36, 1) both; }
+        .qalb-nuance-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(29, 49, 41, 0.08); }
         .qalb-section-1 { animation: fadeSlide 0.7s 0.18s ease both; opacity: 0; animation-fill-mode: forwards; }
         .qalb-section-2 { animation: fadeSlide 0.7s 0.28s ease both; opacity: 0; animation-fill-mode: forwards; }
         .qalb-section-3 { animation: fadeSlide 0.7s 0.38s ease both; opacity: 0; animation-fill-mode: forwards; }
@@ -346,51 +576,334 @@ export default function Dashboard({ user }) {
             </div>
           </header>
 
-          {/* ── MOOD ── */}
+          {/* ── MOOD (OPTION A: STEP-BY-STEP POP-OUT FLOW) ── */}
           <div className="qalb-section-1" style={{ margin: "18px 20px 0", border: "1px solid #e2e9df", borderRadius: 20, background: "#ffffff", boxShadow: "0 4px 20px rgba(29, 49, 41, 0.04)", overflow: "hidden" }}>
-            <SectionHeader icon={<IconHeart />} title="Your mood" />
-            <div className="qalb-mood-grid">
-              {MOOD_OPTIONS.map(m => (
-                <button
-                  key={m.label}
-                  className={`qalb-mood-btn${selectedMood === m.label ? " selected" : ""}`}
-                  onClick={() => handleMoodSelect(m)}
-                >
-                  <span className="qalb-mood-emoji">{m.emoji}</span>
-                  <span>{m.label}</span>
-                </button>
-              ))}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingRight: 20 }}>
+              <SectionHeader icon={<IconHeart />} title="State of your heart" />
+              <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                {[1, 2, 3].map(stepNum => {
+                  const done =
+                    (stepNum === 1 && selectedCore) ||
+                    (stepNum === 2 && selectedMood) ||
+                    (stepNum === 3 && selectedMood);
+                  const active =
+                    (stepNum === 1 && !selectedCore) ||
+                    (stepNum === 2 && selectedCore && !selectedMood) ||
+                    (stepNum === 3 && selectedMood);
+                  return (
+                    <span
+                      key={stepNum}
+                      style={{
+                        width: active ? 18 : 7,
+                        height: 7,
+                        borderRadius: 999,
+                        background: done ? "#167754" : active ? "#74b896" : "#dce5da",
+                        transition: "all 0.25s ease",
+                      }}
+                    />
+                  );
+                })}
+              </div>
             </div>
+
+            {/* Step 1: 5 Calm Core States */}
+            <div style={{ padding: "14px 20px 16px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+                <span style={{ fontSize: 10, fontWeight: 800, color: "#167754", background: "#eef6f0", padding: "2px 7px", borderRadius: 999 }}>
+                  01
+                </span>
+                <span style={{ fontSize: 11.5, fontWeight: 600, color: "#3d5446" }}>
+                  Sense your overall state
+                </span>
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 8 }}>
+                {CORE_MOOD_STATES.map(core => {
+                  const isSelected = selectedCore === core.id;
+                  return (
+                    <button
+                      key={core.id}
+                      type="button"
+                      className={`qalb-mood-btn${isSelected ? " selected" : ""}`}
+                      style={{
+                        flex: "1 1 28%",
+                        minWidth: 92,
+                        maxWidth: 140,
+                        transform: isSelected ? "scale(1.03)" : undefined,
+                      }}
+                      onClick={() => setSelectedCore(isSelected ? null : core.id)}
+                    >
+                      <span className="qalb-mood-emoji">{core.emoji}</span>
+                      <span>{core.label}</span>
+                      <span style={{ fontSize: 10, color: isSelected ? "#167754" : "#7b8d82", fontStyle: "italic", fontWeight: 500 }}>
+                        {core.sub}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Step 2: Granular Nuances (pops out on core select) */}
+            {selectedCore && (
+              <div
+                key={`step2-${selectedCore}`}
+                className="qalb-step-pop"
+                style={{
+                  margin: "0 16px 16px",
+                  padding: "14px 14px",
+                  borderRadius: 16,
+                  border: "1px solid #d9e6d8",
+                  background: "#f8fbf7",
+                  boxShadow: "0 6px 18px rgba(22, 119, 84, 0.06)",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+                  <span style={{ fontSize: 10, fontWeight: 800, color: "#ffffff", background: "#167754", padding: "2px 7px", borderRadius: 999 }}>
+                    02
+                  </span>
+                  <span style={{ fontSize: 11.5, fontWeight: 600, color: "#1d3129" }}>
+                    Name what fits closest right now
+                  </span>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8 }}>
+                  {CORE_MOOD_STATES.find(c => c.id === selectedCore)?.nuances.map(n => {
+                    const active = selectedMood === n.label;
+                    return (
+                      <button
+                        key={n.label}
+                        type="button"
+                        className="qalb-nuance-btn"
+                        onClick={() => handleMoodSelect(n)}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                          padding: "10px 12px",
+                          borderRadius: 12,
+                          border: active ? `1.5px solid ${n.color}` : "1px solid #dce5da",
+                          background: active ? n.bg : "#ffffff",
+                          color: active ? n.color : "#2f4437",
+                          cursor: "pointer",
+                          textAlign: "left",
+                          boxShadow: active ? "0 4px 12px rgba(22, 119, 84, 0.12)" : "none",
+                          transition: "all 0.18s",
+                        }}
+                      >
+                        <span style={{ fontSize: 17 }}>{n.emoji}</span>
+                        <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.2 }}>
+                          <span style={{ fontSize: 12.5, fontWeight: active ? 700 : 600 }}>{n.label}</span>
+                          <span style={{ fontSize: 10, fontStyle: "italic", opacity: 0.82 }}>{n.sub}</span>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Step 3: Intensity (pops out on nuance select) */}
+            {selectedMood && (
+              <div
+                key={`step3-${selectedMood}`}
+                className="qalb-step-pop"
+                style={{
+                  margin: "0 16px 18px",
+                  padding: "12px 14px",
+                  borderRadius: 16,
+                  border: "1px solid #d5e4d6",
+                  background: "#eef6f0",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <span style={{ fontSize: 10, fontWeight: 800, color: "#ffffff", background: "#167754", padding: "2px 7px", borderRadius: 999 }}>
+                      03
+                    </span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "#1d3129", letterSpacing: "0.02em" }}>
+                      How heavy is {selectedMood}?
+                    </span>
+                  </div>
+                  <span style={{ fontSize: 10.5, fontWeight: 600, color: "#167754" }}>
+                    {INTENSITY_OPTIONS.find(i => i.label === selectedIntensity)?.hint}
+                  </span>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+                  {INTENSITY_OPTIONS.map(opt => {
+                    const active = selectedIntensity === opt.label;
+                    return (
+                      <button
+                        key={opt.label}
+                        type="button"
+                        onClick={() => setSelectedIntensity(opt.label)}
+                        style={{
+                          padding: "7px 10px",
+                          borderRadius: 999,
+                          border: active ? "1.5px solid #167754" : "1px solid #cce0ce",
+                          background: active ? "#167754" : "#ffffff",
+                          color: active ? "#ffffff" : "#3a5445",
+                          fontSize: 12,
+                          fontWeight: active ? 700 : 600,
+                          cursor: "pointer",
+                          transition: "all 0.18s",
+                        }}
+                      >
+                        {opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* ── AYAH OF THE DAY ── */}
+          {/* ── AYAH OF THE MOMENT ── */}
           <div className="qalb-section-2" style={{ margin: "18px 20px 0", border: "1px solid #e2e9df", borderRadius: 20, background: "#ffffff", boxShadow: "0 4px 20px rgba(29, 49, 41, 0.04)", overflow: "hidden" }}>
-            <SectionHeader icon={<IconAyah />} title="Ayah of the day" />
+            <SectionHeader icon={<IconAyah />} title="Ayah of the moment" />
             <div className="qalb-ayah-card" style={{ margin: "14px 20px 20px" }}>
-              <p className="qalb-arabic">إِنَّ مَعَ الْعُسْرِ يُسْرًا</p>
-              <p className="qalb-translation">"Verily, with every hardship comes ease."</p>
-              <span className="qalb-ayah-source">Al-Inshirah 94:6</span>
+              {ayahOfTheDay.theme && (
+                <div style={{
+                  display: "inline-block",
+                  marginBottom: 10,
+                  padding: "3px 10px",
+                  borderRadius: 999,
+                  background: "#eef6f0",
+                  color: "#167754",
+                  fontSize: 10.5,
+                  fontWeight: 700,
+                  letterSpacing: "0.04em",
+                }}>
+                  {ayahOfTheDay.theme}
+                </div>
+              )}
+              <p className="qalb-arabic">{ayahOfTheDay.arabic}</p>
+              <p className="qalb-translation">"{ayahOfTheDay.translation}"</p>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                <span className="qalb-ayah-source">{ayahOfTheDay.source}</span>
+                {ayahOfTheDay.verified && (
+                  <span style={{ fontSize: 10, fontWeight: 700, color: "#167754", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+                    ✓ Verified
+                  </span>
+                )}
+              </div>
+              <AyahActions verseKey={ayahOfTheDay.verseKey} audioUrl={ayahOfTheDay.audioUrl} />
             </div>
           </div>
 
           {/* ── JOURNAL ── */}
           <SectionCard style={{ marginTop: 18 }} className="qalb-section-3">
-            <SectionHeader
-              icon={<IconBook />}
-              title="Journal"
-              badge={activeMood ? activeMood.emoji : "✎"}
-            />
-            <div style={{ padding: "14px 20px 20px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingRight: 20 }}>
+              <SectionHeader
+                icon={<IconBook />}
+                title="Muhāsabah Journal"
+                badge={activeMood ? activeMood.emoji : "✎"}
+              />
+              {speechSupported && (
+                <button
+                  type="button"
+                  onClick={handleToggleVoice}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 5,
+                    padding: "5px 11px",
+                    borderRadius: 999,
+                    border: isListening ? "1.5px solid #c0392b" : "1px solid #d5e0d5",
+                    background: isListening ? "#fdf2f0" : "#ffffff",
+                    color: isListening ? "#c0392b" : "#167754",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  <span>{isListening ? "●" : "🎙️"}</span>
+                  <span>{isListening ? "Listening…" : "Speak"}</span>
+                </button>
+              )}
+            </div>
+            <div style={{ padding: "12px 20px 20px" }}>
+              <p style={{ margin: "0 0 10px", fontSize: 11.5, color: "#687b6f", fontStyle: "italic" }}>
+                Begin with Bismillah — this sanctuary is private between you and Allah.
+              </p>
+
+              {/* Mood-Aware Guided Prompt */}
+              {(() => {
+                const prompts = JOURNAL_PROMPTS[selectedMood] || JOURNAL_PROMPTS.default;
+                const activePrompt = prompts[promptIdx % prompts.length];
+                return (
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "flex-start",
+                      justifyContent: "space-between",
+                      gap: 10,
+                      marginBottom: 12,
+                      padding: "10px 12px",
+                      borderRadius: 12,
+                      background: "#f5f8f3",
+                      border: "1px solid #e0e9dd",
+                    }}
+                  >
+                    <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.5, color: "#2d4537", fontWeight: 500 }}>
+                      “{activePrompt}”
+                    </p>
+                    {prompts.length > 1 && (
+                      <button
+                        type="button"
+                        title="Another prompt"
+                        onClick={() => setPromptIdx(i => i + 1)}
+                        style={{
+                          flexShrink: 0,
+                          border: "1px solid #d2dfd0",
+                          background: "#ffffff",
+                          color: "#167754",
+                          borderRadius: 999,
+                          padding: "3px 9px",
+                          fontSize: 11,
+                          fontWeight: 600,
+                          cursor: "pointer",
+                        }}
+                      >
+                        ↻
+                      </button>
+                    )}
+                  </div>
+                );
+              })()}
+
               <textarea
+                ref={textareaRef}
                 className="qalb-textarea"
-                rows={5}
+                rows={4}
                 placeholder="Write what is on your heart…"
                 value={journalContent}
-                onChange={e => setJournalContent(e.target.value)}
+                onChange={e => {
+                  setJournalContent(e.target.value);
+                  if (scopeNotice) setScopeNotice("");
+                }}
               />
+              {scopeNotice && (
+                <div
+                  style={{
+                    marginTop: 10,
+                    padding: "11px 14px",
+                    borderRadius: 12,
+                    border: "1px solid #e3decb",
+                    background: "#fcfaf3",
+                    color: "#5b481b",
+                    fontSize: 12.5,
+                    lineHeight: 1.55,
+                  }}
+                >
+                  <strong style={{ display: "block", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.06em", color: "#8c6d23", marginBottom: 3 }}>
+                    Gentle Reminder
+                  </strong>
+                  {scopeNotice}
+                </div>
+              )}
               <div className="qalb-btn-row">
                 <button className="qalb-btn-save" onClick={handleSaveJournal}>
-                  Save
+                  Save only
                 </button>
                 {journalContent.trim() && (
                   <button
@@ -408,10 +921,119 @@ export default function Dashboard({ user }) {
           {/* ── REFLECTION ── */}
           {reflection && (
             <div ref={reflectionRef} style={{ margin: "16px 20px 0", border: "1px solid #e2e9df", borderRadius: 20, background: "#ffffff", boxShadow: "0 4px 20px rgba(29, 49, 41, 0.04)", overflow: "hidden", animation: "fadeSlide 0.6s ease both" }}>
-              <SectionHeader icon={<IconStar />} title="Your reflection" />
-              <div className="qalb-reflection-box">
-                <span className="qalb-reflection-star">✦</span>
-                <p className="qalb-reflection-text">{reflection}</p>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingRight: 20 }}>
+                <SectionHeader icon={<IconStar />} title="Your reflection" />
+                <button
+                  type="button"
+                  onClick={handleNewCheckIn}
+                  style={{
+                    border: "1px solid #dce5da",
+                    background: "#ffffff",
+                    color: "#4c6255",
+                    borderRadius: 999,
+                    padding: "4px 10px",
+                    fontSize: 11,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                  }}
+                >
+                  New check-in
+                </button>
+              </div>
+              <div style={{ padding: "14px 18px 20px" }}>
+                <StructuredReflection text={reflection} verifiedAyah={verifiedAyah} />
+
+                {/* Privacy-safe AI Feedback */}
+                {savedReflectionId && (
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12, padding: "8px 4px 0" }}>
+                    <span style={{ fontSize: 11.5, color: "#687b6f" }}>Was this reflection helpful?</span>
+                    <div style={{ display: "flex", gap: 6 }}>
+                      {[
+                        { val: "helpful", label: "👍 Helpful" },
+                        { val: "needs_work", label: "👎 Missed" },
+                      ].map(btn => {
+                        const active = reflectionFeedback === btn.val;
+                        return (
+                          <button
+                            key={btn.val}
+                            type="button"
+                            onClick={() => handleReflectionFeedback(btn.val)}
+                            style={{
+                              padding: "4px 10px",
+                              borderRadius: 999,
+                              border: active ? "1px solid #167754" : "1px solid #dce5da",
+                              background: active ? "#eef6f0" : "#ffffff",
+                              color: active ? "#167754" : "#586b61",
+                              fontSize: 11,
+                              fontWeight: active ? 700 : 500,
+                              cursor: "pointer",
+                            }}
+                          >
+                            {btn.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Closing Du'a */}
+                <div
+                  style={{
+                    marginTop: 14,
+                    padding: "12px 14px",
+                    borderRadius: 14,
+                    border: "1px solid #e2e9df",
+                    background: "#fbfcf9",
+                  }}
+                >
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#167754", letterSpacing: "0.04em", marginBottom: 6 }}>
+                    🤲 Seal with a personal Du‘ā’
+                  </div>
+                  {duaSaved ? (
+                    <p style={{ margin: 0, fontSize: 13, fontStyle: "italic", color: "#2d4537" }}>
+                      “{closingDua}” — Āmīn.
+                    </p>
+                  ) : (
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <input
+                        type="text"
+                        value={closingDua}
+                        onChange={e => setClosingDua(e.target.value)}
+                        onKeyDown={e => { if (e.key === "Enter") handleSaveDua(); }}
+                        placeholder="Ya Allah, grant my heart…"
+                        style={{
+                          flex: 1,
+                          minWidth: 0,
+                          padding: "8px 12px",
+                          borderRadius: 999,
+                          border: "1px solid #d5e0d5",
+                          background: "#ffffff",
+                          color: "#1d3129",
+                          fontSize: 12.5,
+                          outline: "none",
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={handleSaveDua}
+                        disabled={!closingDua.trim()}
+                        style={{
+                          padding: "8px 14px",
+                          borderRadius: 999,
+                          border: "none",
+                          background: closingDua.trim() ? "#167754" : "#cbd8cd",
+                          color: "#ffffff",
+                          fontSize: 12,
+                          fontWeight: 600,
+                          cursor: closingDua.trim() ? "pointer" : "default",
+                        }}
+                      >
+                        Save Du‘ā’
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -433,6 +1055,10 @@ export default function Dashboard({ user }) {
             <Link to="/reflection-history" className={`qalb-nav-item${location.pathname === "/reflection-history" ? " active" : ""}`}>
               <div className="qalb-nav-icon-wrap"><NavReflect active={location.pathname === "/reflection-history"} /></div>
               <span className="qalb-nav-label">Reflect</span>
+            </Link>
+            <Link to="/coming-soon" className={`qalb-nav-item${location.pathname === "/coming-soon" ? " active" : ""}`}>
+              <div className="qalb-nav-icon-wrap"><NavSoon active={location.pathname === "/coming-soon"} /></div>
+              <span className="qalb-nav-label">Coming Soon</span>
             </Link>
           </nav>
 
