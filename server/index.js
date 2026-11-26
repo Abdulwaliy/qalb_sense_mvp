@@ -87,6 +87,14 @@ app.get("/", (req, res) => {
   res.send("QalbSense backend is alive 🧠");
 });
 
+app.get("/health", (req, res) => {
+  res.json({
+    status: "ok",
+    quranApiConfigured: isQuranApiConfigured(),
+    quranEnv: process.env.QURAN_ENV || "production",
+  });
+});
+
 /* ---------------- Ayah of the Day Route ---------------- */
 app.get("/api/ayah", async (req, res) => {
   try {

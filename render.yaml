@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: qalb-sense-mvp
+    runtime: node
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_MODEL
+        value: llama-3.3-70b-versatile
+      - key: QURAN_ENV
+        value: prelive
+      - key: QURAN_CLIENT_ID
+        sync: false
+      - key: QURAN_CLIENT_SECRET
+        sync: false
