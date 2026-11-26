@@ -38,17 +38,49 @@ function BlogHeader() {
 function BlogFooter() {
   return (
     <footer className="landing-footer">
-      <Link className="landing-brand" to="/" aria-label="QalbSense home">
-        <BrandMark />
-        <span>qalb<span className="landing-brand-accent">sense</span></span>
-      </Link>
-      <span>QalbSense · Islamic Personal Development Product by Fitrah. — <em>Sense your heart. Learn Tazkiyah. Return to Allah.</em></span>
-      <nav aria-label="Footer navigation">
-        <Link to="/">Home</Link>
-        <Link to="/blog">Tazkiyah Blog</Link>
-        <Link to="/waitlist">Waitlist</Link>
-      </nav>
-      <span>© 2026 Fitrah. All rights reserved.</span>
+      <div className="landing-footer-inner">
+        <div className="landing-footer-top">
+          <div className="landing-footer-brand">
+            <Link className="landing-brand" to="/" aria-label="QalbSense home">
+              <BrandMark />
+              <span>qalb<span className="landing-brand-accent">sense</span></span>
+            </Link>
+            <p className="landing-footer-motto">
+              Sense your heart. Learn Tazkiyah. Return to Allah.
+            </p>
+            <p className="landing-footer-desc">
+              Grounded in revelation. Dedicated to healing the heart. An Islamic Personal Development Product by Fitrah.
+            </p>
+          </div>
+
+          <nav className="landing-footer-col" aria-label="Explore sections">
+            <span className="landing-footer-heading">Explore</span>
+            <Link to="/">Home</Link>
+            <Link to="/#approach">Our Approach</Link>
+            <Link to="/#foundation">Islamic Heritage</Link>
+            <Link to="/#privacy">Amanah & Privacy</Link>
+          </nav>
+
+          <nav className="landing-footer-col" aria-label="Platform links">
+            <span className="landing-footer-heading">Platform</span>
+            <Link to="/blog">Tazkiyah Blog</Link>
+            <Link to="/waitlist">Join the Waitlist</Link>
+            <Link to="/auth">Sign In</Link>
+            <button
+              type="button"
+              className="landing-footer-top-btn"
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            >
+              Back to top <span aria-hidden="true">↑</span>
+            </button>
+          </nav>
+        </div>
+
+        <div className="landing-footer-bottom">
+          <span>© 2026 Fitrah. All rights reserved.</span>
+          <span className="landing-footer-amanah">Built with care as an Amanah · Bi’idhnillāh</span>
+        </div>
+      </div>
     </footer>
   );
 }
