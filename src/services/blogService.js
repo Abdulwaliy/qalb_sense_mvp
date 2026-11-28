@@ -135,3 +135,42 @@ export async function seedInitialBlogs() {
   }
   return BLOG_POSTS.length;
 }
+
+/**
+ * Records that a signed-in user read a Tazkiyah blog essay (upsert by userId_slug).
+ */
+export async function recordBlogRead(userId, post) {
+  if (!userId || !post?.slug) return;
+  try {
+    const readId = `${userId}_${post.slug}`;
+    await setDoc(
+      doc(db, "blogReads", readId),
+      {
+        userId,
+        slug: post.slug,
+        title: post.title || "",
+        category: post.category || "",
+        linkedMoods: Array.isArray(post.linkedMoods) ? post.linkedMoods : [],
+        readAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+  } catch (err) {
+    console.warn("Could not record blog read:", err.message);
+  }
+}
+
+/**
+ * Fetches all Tazkiyah blog essays read by a user.
+ */
+export async function getUserBlogReads(userId) {
+  if (!userId) return [];
+  try {
+    const q = query(collection(db, "blogReads"), where("userId", "==", userId));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+  } catch (err) {
+    console.warn("Could not fetch user blog reads:", err.message);
+    return [];
+  }
+}

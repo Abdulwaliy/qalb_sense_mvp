@@ -38,6 +38,15 @@ const NavReflect = ({ a }) => (
     <circle cx="15.4" cy="4.6" r="1" fill={a ? "#167754" : "#6b7d72"} />
   </svg>
 );
+const NavDigest = ({ a }) => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <rect x="3.2" y="4.2" width="13.6" height="12.6" rx="2.5"
+      fill={a ? "rgba(22, 119, 84, 0.14)" : "none"}
+      stroke={a ? "#167754" : "#6b7d72"} strokeWidth="1.5" />
+    <path d="M6.8 2.8v2.6M13.2 2.8v2.6M6.2 9.2h7.6M6.2 12.6h4.8"
+      stroke={a ? "#167754" : "#6b7d72"} strokeWidth="1.5" strokeLinecap="round" />
+  </svg>
+);
 const NavSoon = ({ a }) => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
     <rect x="4.5" y="8.8" width="11" height="8" rx="2.4"
@@ -353,7 +362,7 @@ export default function ComingSoon() {
           justify-content: center;
           align-items: center;
           gap: 2px;
-          padding: 8px max(10px, calc((100% - 560px) / 2)) 14px;
+          padding: 8px max(8px, calc((100% - 620px) / 2)) 14px;
           background: rgba(245, 247, 240, 0.96);
           border-top: 1px solid #dce5da;
           box-shadow: 0 -4px 20px rgba(17, 33, 23, 0.04);
@@ -395,9 +404,9 @@ export default function ComingSoon() {
           outline-offset: 2px;
         }
         .qalb-nav-label {
-          font-size: 9.5px;
+          font-size: 8.8px;
           font-weight: 500;
-          letter-spacing: 0.03em;
+          letter-spacing: 0.02em;
           color: #65776c;
           font-family: 'DM Sans', sans-serif;
           text-transform: uppercase;
@@ -488,6 +497,7 @@ export default function ComingSoon() {
             { to: "/mood-history",       label: "Mood",        Icon: NavMood    },
             { to: "/journal-history",    label: "Journal",     Icon: NavJournal },
             { to: "/reflection-history", label: "Reflect",     Icon: NavReflect },
+            { to: "/weekly-digest",      label: "Digest",      Icon: NavDigest  },
             { to: "/coming-soon",        label: "Coming Soon", Icon: NavSoon    },
           ].map(({ to, label, Icon }) => {
             const active = location.pathname === to;

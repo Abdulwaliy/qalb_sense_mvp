@@ -77,6 +77,15 @@ const NavReflect = ({ active }) => (
     <circle cx="15.4" cy="4.6" r="1" fill={active ? "#167754" : "#6b7d72"} />
   </svg>
 );
+const NavDigest = ({ active }) => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <rect x="3.2" y="4.2" width="13.6" height="12.6" rx="2.5"
+      fill={active ? "rgba(22, 119, 84, 0.14)" : "none"}
+      stroke={active ? "#167754" : "#6b7d72"} strokeWidth="1.5" />
+    <path d="M6.8 2.8v2.6M13.2 2.8v2.6M6.2 9.2h7.6M6.2 12.6h4.8"
+      stroke={active ? "#167754" : "#6b7d72"} strokeWidth="1.5" strokeLinecap="round" />
+  </svg>
+);
 const NavSoon = ({ active }) => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
     <rect x="4.5" y="8.8" width="11" height="8" rx="2.4"
@@ -520,13 +529,13 @@ export default function Dashboard({ user }) {
         .qalb-reflection-star { position: absolute; top: 12px; right: 14px; color: #a48a49; font-size: 14px; opacity: 0.8; }
 
         /* Bottom Nav */
-        .qalb-nav { position: fixed; bottom: 0; left: 0; right: 0; display: flex; justify-content: center; align-items: center; gap: 2px; padding: 8px max(10px, calc((100% - 560px) / 2)) 14px; background: rgba(245,247,240,0.96); border-top: 1px solid #dce5da; box-shadow: 0 -4px 20px rgba(17,33,23,0.04); backdrop-filter: blur(16px); z-index: 50; }
+        .qalb-nav { position: fixed; bottom: 0; left: 0; right: 0; display: flex; justify-content: center; align-items: center; gap: 2px; padding: 8px max(8px, calc((100% - 620px) / 2)) 14px; background: rgba(245,247,240,0.96); border-top: 1px solid #dce5da; box-shadow: 0 -4px 20px rgba(17,33,23,0.04); backdrop-filter: blur(16px); z-index: 50; }
         .qalb-nav-item { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 4px 2px; border-radius: 12px; text-decoration: none; transition: all 0.2s; }
         .qalb-nav-icon-wrap { width: 38px; height: 34px; border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 1px solid transparent; transition: background 0.2s, border-color 0.2s; }
         .qalb-nav-item:hover .qalb-nav-icon-wrap { background: rgba(22,119,84,0.06); }
         .qalb-nav-item.active .qalb-nav-icon-wrap { background: #e6f4ea; border-color: rgba(22,119,84,0.16); }
         .qalb-nav-item:focus-visible { outline: 2px solid #167754; outline-offset: 2px; }
-        .qalb-nav-label { font-size: 9.5px; font-weight: 500; letter-spacing: 0.03em; color: #65776c; font-family: 'DM Sans', sans-serif; text-transform: uppercase; white-space: nowrap; }
+        .qalb-nav-label { font-size: 8.8px; font-weight: 500; letter-spacing: 0.02em; color: #65776c; font-family: 'DM Sans', sans-serif; text-transform: uppercase; white-space: nowrap; }
         .qalb-nav-item.active .qalb-nav-label { color: #167754; font-weight: 700; }
 
         /* Animations */
@@ -1144,6 +1153,10 @@ export default function Dashboard({ user }) {
             <Link to="/reflection-history" className={`qalb-nav-item${location.pathname === "/reflection-history" ? " active" : ""}`}>
               <div className="qalb-nav-icon-wrap"><NavReflect active={location.pathname === "/reflection-history"} /></div>
               <span className="qalb-nav-label">Reflect</span>
+            </Link>
+            <Link to="/weekly-digest" className={`qalb-nav-item${location.pathname === "/weekly-digest" ? " active" : ""}`}>
+              <div className="qalb-nav-icon-wrap"><NavDigest active={location.pathname === "/weekly-digest"} /></div>
+              <span className="qalb-nav-label">Digest</span>
             </Link>
             <Link to="/coming-soon" className={`qalb-nav-item${location.pathname === "/coming-soon" ? " active" : ""}`}>
               <div className="qalb-nav-icon-wrap"><NavSoon active={location.pathname === "/coming-soon"} /></div>

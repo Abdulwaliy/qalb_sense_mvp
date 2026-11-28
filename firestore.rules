@@ -45,5 +45,15 @@ service cloud.firestore {
       allow read: if resource.data.published == true || isBlogAdmin();
       allow create, update, delete: if isBlogAdmin();
     }
+
+    match /blogReads/{docId} {
+      allow read, update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+    }
+
+    match /weeklyDigests/{docId} {
+      allow read, update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+    }
   }
 }

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { BLOG_CATEGORIES, BLOG_POSTS } from "../data/blogPosts.js";
-import { getPublishedBlogs } from "../services/blogService.js";
+import { getPublishedBlogs, recordBlogRead } from "../services/blogService.js";
 import "./LandingPage.css";
 import "./BlogPage.css";
 
@@ -86,7 +86,7 @@ function BlogFooter() {
   );
 }
 
-function BlogPage() {
+function BlogPage({ user = null }) {
   const { slug } = useParams();
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [posts, setPosts] = useState(BLOG_POSTS);
@@ -102,6 +102,14 @@ function BlogPage() {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!user?.uid || !slug) return;
+    const matched = posts.find((p) => p.slug === slug);
+    if (matched) {
+      recordBlogRead(user.uid, matched);
+    }
+  }, [user?.uid, slug, posts]);
 
   if (slug) {
     const post = posts.find((p) => p.slug === slug);

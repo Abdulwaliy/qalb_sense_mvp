@@ -16,6 +16,7 @@ import {
   getVerifiedSunnahForMood,
   matchVerifiedSunnah,
 } from "./sunnahService.js";
+import { retrieveSemanticBlogRecommendation } from "./ragService.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -62,13 +63,13 @@ function buildReflectionUserMessage(mood, journal, timeOfDay, intensity, sunnahO
   return `${timeContext}${intensityContext}Mood: ${mood}${nameContext}\nVerified Sunnah Options (pick the ONE that best matches their journal):\n${sunnahListText}\n\nVerified Qur'an Ayah Options (pick ONE and cite its exact Surah:Ayah):\n${ayahListText}\n\nJournal:\n${journal}`;
 }
 
-async function requestGroqChat(model, userMessage) {
+async function requestGroqChat(model, userMessage, systemPrompt = SYSTEM_PROMPT) {
   const bodyPayload = {
     model,
     messages: [
       {
         role: "system",
-        content: SYSTEM_PROMPT,
+        content: systemPrompt,
       },
       {
         role: "user",
@@ -97,7 +98,7 @@ async function requestGroqChat(model, userMessage) {
   return { ok: response.ok, status: response.status, data };
 }
 
-async function requestGeminiChat(userMessage) {
+async function requestGeminiChat(userMessage, systemPrompt = SYSTEM_PROMPT) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(GEMINI_MODEL)}:generateContent?key=${encodeURIComponent(process.env.GEMINI_API_KEY)}`;
   const response = await fetch(url, {
     method: "POST",
@@ -106,7 +107,7 @@ async function requestGeminiChat(userMessage) {
     },
     body: JSON.stringify({
       systemInstruction: {
-        parts: [{ text: SYSTEM_PROMPT }],
+        parts: [{ text: systemPrompt }],
       },
       contents: [
         {
@@ -132,6 +133,52 @@ async function requestGeminiChat(userMessage) {
     .trim();
 
   return { ok: response.ok && Boolean(text), status: response.status, data, text };
+}
+
+async function generateWithFallback(systemPrompt, userMessage) {
+  let result = { ok: false, status: 500, data: null };
+  let content = "";
+  const preferGemini = String(process.env.AI_PROVIDER || "groq").toLowerCase() === "gemini";
+
+  if (preferGemini && process.env.GEMINI_API_KEY) {
+    console.log(`🌐 Requesting AI with Gemini model: ${GEMINI_MODEL}`);
+    try {
+      const geminiRes = await requestGeminiChat(userMessage, systemPrompt);
+      if (geminiRes.ok && geminiRes.text) {
+        return { ok: true, content: geminiRes.text, result: geminiRes };
+      }
+      result = geminiRes;
+    } catch (gemErr) {
+      console.warn(`⚠️ Gemini request error (${gemErr.message}), falling back to Groq...`);
+    }
+  }
+
+  if (process.env.GROQ_API_KEY) {
+    console.log(`🌐 Requesting AI with Groq model: ${PRIMARY_MODEL}`);
+    result = await requestGroqChat(PRIMARY_MODEL, userMessage, systemPrompt);
+    content = result.data?.choices?.[0]?.message?.content?.trim() || "";
+
+    if ((!result.ok || !content) && PRIMARY_MODEL !== FALLBACK_MODEL) {
+      console.warn(`⚠️ Primary Groq model (${PRIMARY_MODEL}) failed or returned empty. Trying fallback: ${FALLBACK_MODEL}...`);
+      result = await requestGroqChat(FALLBACK_MODEL, userMessage, systemPrompt);
+      content = result.data?.choices?.[0]?.message?.content?.trim() || "";
+    }
+  }
+
+  if ((!result.ok || !content) && !preferGemini && process.env.GEMINI_API_KEY) {
+    console.warn(`⚠️ Falling back to Gemini backup model: ${GEMINI_MODEL}...`);
+    try {
+      const geminiRes = await requestGeminiChat(userMessage, systemPrompt);
+      if (geminiRes.ok && geminiRes.text) {
+        return { ok: true, content: geminiRes.text, result: geminiRes };
+      }
+      result = geminiRes;
+    } catch (gemErr) {
+      console.warn(`⚠️ Gemini backup failed (${gemErr.message})`);
+    }
+  }
+
+  return { ok: result.ok && Boolean(content), content, result };
 }
 
 /* ---------------- Health Check ---------------- */
@@ -224,50 +271,9 @@ app.post("/api/reflection", async (req, res) => {
     const matchedName = getMatchedNameOfAllah(mood, journal);
     const userMessage = buildReflectionUserMessage(mood, journal, timeOfDay, intensity, sunnahOptions, ayahOptions, matchedName);
 
-    let result = { ok: false, status: 500, data: null };
-    let content = "";
-    const preferGemini = String(process.env.AI_PROVIDER || "groq").toLowerCase() === "gemini";
+    const { ok, content, result } = await generateWithFallback(SYSTEM_PROMPT, userMessage);
 
-    if (preferGemini && process.env.GEMINI_API_KEY) {
-      console.log(`🌐 Requesting reflection with Gemini model: ${GEMINI_MODEL}`);
-      try {
-        const geminiRes = await requestGeminiChat(userMessage);
-        if (geminiRes.ok && geminiRes.text) {
-          result = geminiRes;
-          content = geminiRes.text;
-        } else {
-          console.warn(`⚠️ Gemini failed (${geminiRes.status}), falling back to Groq...`);
-          result = geminiRes;
-        }
-      } catch (gemErr) {
-        console.warn(`⚠️ Gemini request error (${gemErr.message}), falling back to Groq...`);
-      }
-    }
-
-    if ((!result.ok || !content) && process.env.GROQ_API_KEY) {
-      console.log(`🌐 Requesting reflection with Groq model: ${PRIMARY_MODEL}`);
-      result = await requestGroqChat(PRIMARY_MODEL, userMessage);
-      content = result.data?.choices?.[0]?.message?.content?.trim() || "";
-
-      if ((!result.ok || !content) && PRIMARY_MODEL !== FALLBACK_MODEL) {
-        console.warn(`⚠️ Primary Groq model (${PRIMARY_MODEL}) failed or returned empty. Trying fallback: ${FALLBACK_MODEL}...`);
-        result = await requestGroqChat(FALLBACK_MODEL, userMessage);
-        content = result.data?.choices?.[0]?.message?.content?.trim() || "";
-      }
-    }
-
-    if ((!result.ok || !content) && !preferGemini && process.env.GEMINI_API_KEY) {
-      console.warn(`⚠️ Falling back to Gemini backup model: ${GEMINI_MODEL}...`);
-      const geminiRes = await requestGeminiChat(userMessage);
-      if (geminiRes.ok && geminiRes.text) {
-        result = geminiRes;
-        content = geminiRes.text;
-      } else {
-        result = geminiRes;
-      }
-    }
-
-    if (!result.ok || !content) {
+    if (!ok || !content) {
       console.error("❌ AI API error or empty response:", result.data);
       return res.status(result.status || 502).json({
         error: "AI reflection error",
@@ -326,6 +332,91 @@ app.post("/api/reflection", async (req, res) => {
       error: "Reflection failed",
       details: err.message,
     });
+  }
+});
+
+/* ---------------- Weekly Heart & Tazkiyah RAG Digest ---------------- */
+const WEEKLY_DIGEST_PROMPT = `You are QalbSense, a warm, human-sounding Islamic reflection journal summarizing a believer's week of Muhasabah (self-reflection) and Tazkiyah reading.
+
+Rules:
+- Format: Write ONE calm, natural paragraph (70–105 words) in simple everyday English. No bullet lists, no headings.
+- Sound Human (NO AI CLUES): Never sound like an automated analytics report. Do NOT list numbers robotically (avoid "You logged 5 moods, 4 reflections, and 3 Sunnahs") and NEVER say "Based on your data", "Your metrics show", or "As an AI". Speak naturally about the flow of their week (e.g., "This week carried moments of worry alongside quiet relief...").
+- Grounding: Speak only from the week's heart states, essays read, and the suggested next essay provided. Never invent facts or essays.
+- Translate Arabic: Translate any Arabic term (e.g., Muhasabah, Tazkiyah, Sakinah, Istiqamah) in parentheses.
+- Gently invite one small focus for the coming week and mention the suggested essay by its exact title.`;
+
+app.post("/api/weekly-digest", async (req, res) => {
+  try {
+    if (!process.env.GROQ_API_KEY && !process.env.GEMINI_API_KEY) {
+      return res.status(500).json({ error: "Missing AI API key on server" });
+    }
+
+    const {
+      stats = {},
+      topMoods = [],
+      readThisWeek = [],
+      readSlugs = [],
+      journalSummary = "",
+      candidateBlogs = [],
+      recommendedBlogs = [],
+    } = req.body || {};
+
+    let ragResult = {
+      recommendedBlog: recommendedBlogs[0] || null,
+      retrievedChunks: [],
+      retrievalMode: "keyword-fallback",
+    };
+
+    if (Array.isArray(candidateBlogs) && candidateBlogs.length > 0) {
+      ragResult = await retrieveSemanticBlogRecommendation({
+        blogs: candidateBlogs,
+        readSlugs,
+        topMoods,
+        journalSummary,
+      });
+    }
+
+    const moodText = topMoods.length
+      ? topMoods.map((m) => `${m.mood} (${m.count}x)`).join(", ")
+      : "No moods logged yet this week";
+    const readText = readThisWeek.length
+      ? readThisWeek.map((b) => `"${b.title}"`).join(", ")
+      : "None read yet this week";
+    const rec = ragResult.recommendedBlog;
+    const chunkContext = ragResult.retrievedChunks
+      .map((c) => `[${c.title} · ${c.sectionHeading}]: ${c.snippet}`)
+      .join("\n");
+    const recText = rec
+      ? `"${rec.title}" (${rec.category}) — matched section: ${rec.matchedSection || "Overview"}`
+      : "Explore the Tazkiyah Blog";
+
+    const userMessage = [
+      `7-Day Activity: ${stats.moodCheckIns || 0} mood check-ins, ${stats.reflectionsCount || 0} reflections, ${stats.sunnahsPracticed || 0} Sunnah steps practiced, ${stats.blogsReadThisWeek || 0} Tazkiyah essays read.`,
+      `Top Heart States: ${moodText}.`,
+      journalSummary ? `Recent Journal Themes: ${journalSummary}` : "",
+      `Essays Read This Week: ${readText}.`,
+      `Retrieved Recommended Next Essay: ${recText}.`,
+      chunkContext ? `Retrieved Passage Context:\n${chunkContext}` : "",
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+    const { ok, content, result } = await generateWithFallback(WEEKLY_DIGEST_PROMPT, userMessage);
+    if (!ok || !content) {
+      return res.status(result.status || 502).json({
+        error: "Failed to generate weekly digest",
+        details: result.data?.error?.message || "Empty response",
+      });
+    }
+
+    return res.json({
+      summary: content,
+      recommendedBlog: ragResult.recommendedBlog,
+      retrievalMode: ragResult.retrievalMode,
+    });
+  } catch (err) {
+    console.error("❌ Weekly digest error:", err);
+    return res.status(500).json({ error: "Weekly digest failed", details: err.message });
   }
 });
 
