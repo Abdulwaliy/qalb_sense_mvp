@@ -23,6 +23,7 @@ export const saveReflection = async (userId, data) => {
       journalContent: data.journalContent || data.journal || "",
       mood: data.mood || "",
       verifiedAyah: data.verifiedAyah || null,
+      verifiedSunnah: data.verifiedSunnah || null,
       bookmarked: false,
       actionCompleted: false,
       createdAt: now,

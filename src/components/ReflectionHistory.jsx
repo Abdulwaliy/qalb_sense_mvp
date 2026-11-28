@@ -175,6 +175,7 @@ function ReflectionCard({ item, index, onToggleBookmark, onToggleAction, onFeedb
             <StructuredReflection
               text={item.text}
               verifiedAyah={item.verifiedAyah || null}
+              verifiedSunnah={item.verifiedSunnah || null}
               compact
             />
           ) : mirrorPreview ? (
@@ -600,6 +601,7 @@ export default function ReflectionHistory({ user }) {
           time={activeModalItem ? formatTime(resolveMs(activeModalItem.createdAt || activeModalItem.timestamp)) : ""}
           text={activeModalItem?.text}
           verifiedAyah={activeModalItem?.verifiedAyah || null}
+          verifiedSunnah={activeModalItem?.verifiedSunnah || null}
           journalContent={activeModalItem?.journalContent || activeModalItem?.journal || ""}
         />
 

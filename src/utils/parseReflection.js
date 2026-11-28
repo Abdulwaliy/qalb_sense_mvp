@@ -1,9 +1,9 @@
 const SECTION_META = [
-  { num: "01", label: "Mirror of the Heart", tag: "Al-Qalb" },
-  { num: "02", label: "Insight", tag: "Fahm an-Nafs" },
-  { num: "03", label: "Prophetic Reframe", tag: "At-Tazkiyah" },
-  { num: "04", label: "Sunnah Action Step", tag: "‘Amal" },
-  { num: "05", label: "Spiritual Anchor", tag: "Qur’an & Du‘ā’" },
+  { num: "01", label: "Before Allah (State of the Qalb)", tag: "Al-Qalb" },
+  { num: "02", label: "Qur’anic Diagnosis", tag: "Fahm an-Nafs" },
+  { num: "03", label: "Prophetic & Sīrah Lens", tag: "Sīrah & Sunnah" },
+  { num: "04", label: "Authentic Sunnah Action", tag: "Verified Sunnah" },
+  { num: "05", label: "Qur’anic Anchor & Name of Allah", tag: "Āyah & Du‘ā’" },
 ];
 
 const HEADING_REGEX =

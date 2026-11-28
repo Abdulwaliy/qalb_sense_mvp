@@ -168,6 +168,8 @@ export default function Dashboard({ user }) {
   const [promptIdx, setPromptIdx]             = useState(0);
   const [reflection, setReflection]           = useState("");
   const [verifiedAyah, setVerifiedAyah]       = useState(null);
+  const [verifiedSunnah, setVerifiedSunnah]   = useState(null);
+  const [reflectionModalOpen, setReflectionModalOpen] = useState(false);
   const [savedReflectionId, setSavedReflectionId] = useState(null);
   const [reflectionFeedback, setReflectionFeedback] = useState(null);
   const [scopeNotice, setScopeNotice]         = useState("");
@@ -366,11 +368,12 @@ export default function Dashboard({ user }) {
       const text = result.reflection;
       setReflection(text);
       setVerifiedAyah(result.verifiedAyah || null);
+      setVerifiedSunnah(result.verifiedSunnah || null);
+      setReflectionModalOpen(true);
       setSavedReflectionId(null);
       setReflectionFeedback(null);
       setClosingDua("");
       setDuaSaved(false);
-      setTimeout(() => reflectionRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 200);
 
       try {
         if (user?.uid) {
@@ -380,6 +383,7 @@ export default function Dashboard({ user }) {
               journalContent,
               mood: selectedMood || "neutral",
               verifiedAyah: result.verifiedAyah || null,
+              verifiedSunnah: result.verifiedSunnah || null,
             }),
             addJournal(user.uid, journalContent, text),
           ]);
@@ -919,120 +923,205 @@ export default function Dashboard({ user }) {
           </SectionCard>
 
           {/* ── REFLECTION ── */}
-          {reflection && (
-            <div ref={reflectionRef} style={{ margin: "16px 20px 0", border: "1px solid #e2e9df", borderRadius: 20, background: "#ffffff", boxShadow: "0 4px 20px rgba(29, 49, 41, 0.04)", overflow: "hidden", animation: "fadeSlide 0.6s ease both" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingRight: 20 }}>
-                <SectionHeader icon={<IconStar />} title="Your reflection" />
-                <button
-                  type="button"
-                  onClick={handleNewCheckIn}
-                  style={{
-                    border: "1px solid #dce5da",
-                    background: "#ffffff",
-                    color: "#4c6255",
-                    borderRadius: 999,
-                    padding: "4px 10px",
-                    fontSize: 11,
-                    fontWeight: 600,
-                    cursor: "pointer",
-                  }}
-                >
-                  New check-in
-                </button>
-              </div>
-              <div style={{ padding: "14px 18px 20px" }}>
-                <StructuredReflection text={reflection} verifiedAyah={verifiedAyah} />
+          {reflection && !reflectionModalOpen && (
+            <div style={{ margin: "14px 20px 0", display: "flex", justifyContent: "center" }}>
+              <button
+                type="button"
+                onClick={() => setReflectionModalOpen(true)}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  padding: "9px 18px",
+                  borderRadius: 999,
+                  border: "1px solid #bfdeca",
+                  background: "#eef6f0",
+                  color: "#167754",
+                  fontSize: 12.5,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                ✦ Open your reflection
+              </button>
+            </div>
+          )}
 
-                {/* Privacy-safe AI Feedback */}
-                {savedReflectionId && (
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12, padding: "8px 4px 0" }}>
-                    <span style={{ fontSize: 11.5, color: "#687b6f" }}>Was this reflection helpful?</span>
-                    <div style={{ display: "flex", gap: 6 }}>
-                      {[
-                        { val: "helpful", label: "👍 Helpful" },
-                        { val: "needs_work", label: "👎 Missed" },
-                      ].map(btn => {
-                        const active = reflectionFeedback === btn.val;
-                        return (
-                          <button
-                            key={btn.val}
-                            type="button"
-                            onClick={() => handleReflectionFeedback(btn.val)}
-                            style={{
-                              padding: "4px 10px",
-                              borderRadius: 999,
-                              border: active ? "1px solid #167754" : "1px solid #dce5da",
-                              background: active ? "#eef6f0" : "#ffffff",
-                              color: active ? "#167754" : "#586b61",
-                              fontSize: 11,
-                              fontWeight: active ? 700 : 500,
-                              cursor: "pointer",
-                            }}
-                          >
-                            {btn.label}
-                          </button>
-                        );
-                      })}
-                    </div>
+          {reflection && reflectionModalOpen && (
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-label="Your reflection"
+              onClick={() => setReflectionModalOpen(false)}
+              style={{
+                position: "fixed",
+                inset: 0,
+                zIndex: 120,
+                background: "rgba(17, 33, 23, 0.48)",
+                backdropFilter: "blur(6px)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "20px 16px",
+              }}
+            >
+              <div
+                ref={reflectionRef}
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  width: "100%",
+                  maxWidth: 580,
+                  maxHeight: "86vh",
+                  display: "flex",
+                  flexDirection: "column",
+                  borderRadius: 22,
+                  border: "1px solid #d5e2d3",
+                  background: "#ffffff",
+                  boxShadow: "0 24px 70px rgba(17, 33, 23, 0.25)",
+                  overflow: "hidden",
+                  animation: "stepPop 0.25s cubic-bezier(0.22, 1, 0.36, 1) both",
+                }}
+              >
+                <div style={{ height: 3, background: "linear-gradient(90deg, #167754, #a48a49, #167754)" }} />
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingRight: 16, borderBottom: "1px solid #edf1ea", background: "#fcfdfa" }}>
+                  <SectionHeader icon={<IconStar />} title="Your reflection" badge={selectedMood || undefined} />
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setReflectionModalOpen(false);
+                        handleNewCheckIn();
+                      }}
+                      style={{
+                        border: "1px solid #dce5da",
+                        background: "#ffffff",
+                        color: "#4c6255",
+                        borderRadius: 999,
+                        padding: "5px 11px",
+                        fontSize: 11,
+                        fontWeight: 600,
+                        cursor: "pointer",
+                      }}
+                    >
+                      New check-in
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Close reflection"
+                      onClick={() => setReflectionModalOpen(false)}
+                      style={{
+                        width: 30,
+                        height: 30,
+                        borderRadius: "50%",
+                        border: "1px solid #dce5da",
+                        background: "#ffffff",
+                        color: "#4c6255",
+                        fontSize: 14,
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      ✕
+                    </button>
                   </div>
-                )}
+                </div>
+                <div style={{ padding: "16px 20px 22px", overflowY: "auto" }}>
+                  <StructuredReflection text={reflection} verifiedAyah={verifiedAyah} verifiedSunnah={verifiedSunnah} />
 
-                {/* Closing Du'a */}
-                <div
-                  style={{
-                    marginTop: 14,
-                    padding: "12px 14px",
-                    borderRadius: 14,
-                    border: "1px solid #e2e9df",
-                    background: "#fbfcf9",
-                  }}
-                >
-                  <div style={{ fontSize: 11, fontWeight: 700, color: "#167754", letterSpacing: "0.04em", marginBottom: 6 }}>
-                    🤲 Seal with a personal Du‘ā’
-                  </div>
-                  {duaSaved ? (
-                    <p style={{ margin: 0, fontSize: 13, fontStyle: "italic", color: "#2d4537" }}>
-                      “{closingDua}” — Āmīn.
-                    </p>
-                  ) : (
-                    <div style={{ display: "flex", gap: 8 }}>
-                      <input
-                        type="text"
-                        value={closingDua}
-                        onChange={e => setClosingDua(e.target.value)}
-                        onKeyDown={e => { if (e.key === "Enter") handleSaveDua(); }}
-                        placeholder="Ya Allah, grant my heart…"
-                        style={{
-                          flex: 1,
-                          minWidth: 0,
-                          padding: "8px 12px",
-                          borderRadius: 999,
-                          border: "1px solid #d5e0d5",
-                          background: "#ffffff",
-                          color: "#1d3129",
-                          fontSize: 12.5,
-                          outline: "none",
-                        }}
-                      />
-                      <button
-                        type="button"
-                        onClick={handleSaveDua}
-                        disabled={!closingDua.trim()}
-                        style={{
-                          padding: "8px 14px",
-                          borderRadius: 999,
-                          border: "none",
-                          background: closingDua.trim() ? "#167754" : "#cbd8cd",
-                          color: "#ffffff",
-                          fontSize: 12,
-                          fontWeight: 600,
-                          cursor: closingDua.trim() ? "pointer" : "default",
-                        }}
-                      >
-                        Save Du‘ā’
-                      </button>
+                  {/* Privacy-safe AI Feedback */}
+                  {savedReflectionId && (
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12, padding: "8px 4px 0" }}>
+                      <span style={{ fontSize: 11.5, color: "#687b6f" }}>Was this reflection helpful?</span>
+                      <div style={{ display: "flex", gap: 6 }}>
+                        {[
+                          { val: "helpful", label: "👍 Helpful" },
+                          { val: "needs_work", label: "👎 Missed" },
+                        ].map(btn => {
+                          const active = reflectionFeedback === btn.val;
+                          return (
+                            <button
+                              key={btn.val}
+                              type="button"
+                              onClick={() => handleReflectionFeedback(btn.val)}
+                              style={{
+                                padding: "4px 10px",
+                                borderRadius: 999,
+                                border: active ? "1px solid #167754" : "1px solid #dce5da",
+                                background: active ? "#eef6f0" : "#ffffff",
+                                color: active ? "#167754" : "#586b61",
+                                fontSize: 11,
+                                fontWeight: active ? 700 : 500,
+                                cursor: "pointer",
+                              }}
+                            >
+                              {btn.label}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   )}
+
+                  {/* Closing Du'a */}
+                  <div
+                    style={{
+                      marginTop: 14,
+                      padding: "12px 14px",
+                      borderRadius: 14,
+                      border: "1px solid #e2e9df",
+                      background: "#fbfcf9",
+                    }}
+                  >
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "#167754", letterSpacing: "0.04em", marginBottom: 6 }}>
+                      🤲 Seal with a personal Du‘ā’
+                    </div>
+                    {duaSaved ? (
+                      <p style={{ margin: 0, fontSize: 13, fontStyle: "italic", color: "#2d4537" }}>
+                        “{closingDua}” — Āmīn.
+                      </p>
+                    ) : (
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <input
+                          type="text"
+                          value={closingDua}
+                          onChange={e => setClosingDua(e.target.value)}
+                          onKeyDown={e => { if (e.key === "Enter") handleSaveDua(); }}
+                          placeholder="Ya Allah, grant my heart…"
+                          style={{
+                            flex: 1,
+                            minWidth: 0,
+                            padding: "8px 12px",
+                            borderRadius: 999,
+                            border: "1px solid #d5e0d5",
+                            background: "#ffffff",
+                            color: "#1d3129",
+                            fontSize: 12.5,
+                            outline: "none",
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={handleSaveDua}
+                          disabled={!closingDua.trim()}
+                          style={{
+                            padding: "8px 14px",
+                            borderRadius: 999,
+                            border: "none",
+                            background: closingDua.trim() ? "#167754" : "#cbd8cd",
+                            color: "#ffffff",
+                            fontSize: 12,
+                            fontWeight: 600,
+                            cursor: closingDua.trim() ? "pointer" : "default",
+                          }}
+                        >
+                          Save Du‘ā’
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

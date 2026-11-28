@@ -7,6 +7,7 @@ const Auth = lazy(() => import("./components/Auth.jsx"));
 const LandingPage = lazy(() => import("./components/LandingPage.jsx"));
 const WaitlistPage = lazy(() => import("./components/WaitlistPage.jsx"));
 const BlogPage = lazy(() => import("./components/BlogPage.jsx"));
+const BlogAdmin = lazy(() => import("./components/BlogAdmin.jsx"));
 const MoodHistory = lazy(() => import("./components/MoodHistory.jsx"));
 const JournalHistory = lazy(() => import("./components/JournalHistory.jsx"));
 const Dashboard = lazy(() => import("./components/Dashboard.jsx"));
@@ -37,6 +38,7 @@ function AppRoutes({ user }) {
       <Route path="/journal-history" element={<JournalHistory user={user} />} />
       <Route path="/reflection-history" element={<ReflectionHistory user={user} />} />
       <Route path="/coming-soon" element={<ComingSoon user={user} />} />
+      <Route path="/admin/blog" element={<BlogAdmin user={user} />} />
       <Route path="/login" element={<Navigate to="/" replace />} />
       <Route path="/signup" element={<Navigate to="/" replace />} />
       <Route path="*" element={<Navigate to="/" replace />} />
@@ -191,6 +193,7 @@ function App() {
           <Route path="/waitlist" element={<WaitlistPage />} />
           <Route path="/blog" element={<BlogPage />} />
           <Route path="/blog/:slug" element={<BlogPage />} />
+          <Route path="/admin/blog" element={<BlogAdmin user={user} />} />
           <Route path="/login" element={<Auth user={user} initialMode="login" />} />
           <Route path="/signup" element={<Auth user={user} initialMode="signup" />} />
           <Route path="*" element={<Navigate to="/" replace />} />

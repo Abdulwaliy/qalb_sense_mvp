@@ -318,6 +318,11 @@ export function extractVerseKey(text = "") {
   return null;
 }
 
+export function getCuratedVersesForMood(mood = "neutral") {
+  const normalizedMood = MOOD_ALIASES[mood] || mood;
+  return CURATED_MOOD_VERSES[normalizedMood] || CURATED_MOOD_VERSES.neutral;
+}
+
 /**
  * Returns a mood-appropriate Ayah of the Day, using Quran Foundation API if configured,
  * or falling back cleanly to curated local verse data.

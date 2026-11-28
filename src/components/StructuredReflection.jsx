@@ -5,23 +5,110 @@ import AyahActions from "./AyahActions.jsx";
  * Renders a reflection either as 5 structured Islamic psychology section cards
  * or as clean prose if the reflection is unstructured.
  */
-export default function StructuredReflection({ text, verifiedAyah = null, compact = false }) {
+export default function StructuredReflection({
+  text,
+  verifiedAyah = null,
+  verifiedSunnah = null,
+  compact = false,
+}) {
   const sections = parseReflectionSections(text);
 
   if (!sections) {
     return (
-      <p
-        style={{
-          fontFamily: "'Playfair Display', Georgia, serif",
-          fontSize: compact ? 13.5 : 14.5,
-          lineHeight: 1.78,
-          color: "#1d3129",
-          whiteSpace: "pre-line",
-          margin: 0,
-        }}
-      >
-        {cleanMarkdownText(text)}
-      </p>
+      <div style={{ display: "flex", flexDirection: "column", gap: compact ? 10 : 12 }}>
+        <p
+          style={{
+            fontFamily: "'Playfair Display', Georgia, serif",
+            fontSize: compact ? 13.5 : 14.8,
+            lineHeight: 1.8,
+            color: "#1d3129",
+            whiteSpace: "pre-line",
+            margin: 0,
+          }}
+        >
+          {cleanMarkdownText(text)}
+        </p>
+
+        {verifiedSunnah?.source && (
+          <div
+            style={{
+              padding: compact ? "10px 12px" : "12px 14px",
+              borderRadius: 12,
+              background: "#f4f8f2",
+              border: "1px solid #d5e4d4",
+            }}
+          >
+            {verifiedSunnah.arabic && (
+              <p
+                dir="rtl"
+                lang="ar"
+                style={{
+                  margin: "0 0 6px",
+                  fontFamily: "'Amiri', 'Playfair Display', serif",
+                  fontSize: compact ? 16 : 18,
+                  lineHeight: 1.75,
+                  color: "#112117",
+                  textAlign: "right",
+                }}
+              >
+                {verifiedSunnah.arabic}
+              </p>
+            )}
+            {verifiedSunnah.transliteration && (
+              <p style={{ margin: "0 0 4px", fontSize: 12, fontStyle: "italic", color: "#2d4c39" }}>
+                {verifiedSunnah.transliteration}
+              </p>
+            )}
+            {verifiedSunnah.translation && (
+              <p style={{ margin: "0 0 6px", fontSize: 12.5, color: "#1d3129", lineHeight: 1.55 }}>
+                “{verifiedSunnah.translation}”
+              </p>
+            )}
+            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", color: "#0d5f3f", textTransform: "uppercase" }}>
+              ✓ Verified Sunnah · {verifiedSunnah.source}
+            </span>
+          </div>
+        )}
+
+        {verifiedAyah?.arabic && (
+          <div
+            style={{
+              padding: compact ? "10px 12px" : "12px 14px",
+              borderRadius: 12,
+              background: "#f0f7ef",
+              border: "1px solid #bfdeca",
+              borderLeft: "3.5px solid #167754",
+            }}
+          >
+            <p
+              style={{
+                margin: "0 0 4px",
+                fontFamily: "'Amiri', 'Playfair Display', serif",
+                fontSize: compact ? 17 : 19,
+                lineHeight: 1.75,
+                textAlign: "right",
+                direction: "rtl",
+                color: "#112117",
+              }}
+            >
+              {verifiedAyah.arabic}
+            </p>
+            {verifiedAyah.translation && (
+              <p style={{ margin: "0 0 4px", fontSize: 12.5, fontStyle: "italic", color: "#2d4c39" }}>
+                “{verifiedAyah.translation}”
+              </p>
+            )}
+            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", color: "#0d5f3f", textTransform: "uppercase" }}>
+              ✓ Verified · Surah {verifiedAyah.verseKey}
+            </span>
+            <AyahActions
+              verseKey={verifiedAyah.verseKey}
+              audioUrl={verifiedAyah.audioUrl}
+              compact={compact}
+            />
+          </div>
+        )}
+      </div>
     );
   }
 
@@ -99,6 +186,47 @@ export default function StructuredReflection({ text, verifiedAyah = null, compac
           >
             {sec.body}
           </p>
+          {sec.number === 4 && verifiedSunnah?.source && (
+            <div
+              style={{
+                marginTop: 10,
+                padding: "10px 12px",
+                borderRadius: 10,
+                background: "#f4f8f2",
+                border: "1px solid #d5e4d4",
+              }}
+            >
+              {verifiedSunnah.arabic && (
+                <p
+                  dir="rtl"
+                  lang="ar"
+                  style={{
+                    margin: "0 0 6px",
+                    fontFamily: "'Amiri', 'Playfair Display', serif",
+                    fontSize: compact ? 16 : 18,
+                    lineHeight: 1.75,
+                    color: "#112117",
+                    textAlign: "right",
+                  }}
+                >
+                  {verifiedSunnah.arabic}
+                </p>
+              )}
+              {verifiedSunnah.transliteration && (
+                <p style={{ margin: "0 0 4px", fontSize: 12, fontStyle: "italic", color: "#2d4c39" }}>
+                  {verifiedSunnah.transliteration}
+                </p>
+              )}
+              {verifiedSunnah.translation && (
+                <p style={{ margin: "0 0 4px", fontSize: 12, color: "#1d3129", lineHeight: 1.5 }}>
+                  “{verifiedSunnah.translation}”
+                </p>
+              )}
+              <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", color: "#0d5f3f", textTransform: "uppercase" }}>
+                ✓ Verified Sunnah · {verifiedSunnah.source}
+              </span>
+            </div>
+          )}
           {sec.isAnchor && verifiedAyah?.arabic && (
             <div
               style={{

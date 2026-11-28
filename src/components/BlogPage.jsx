@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { BLOG_CATEGORIES, BLOG_POSTS } from "../data/blogPosts.js";
+import { getPublishedBlogs } from "../services/blogService.js";
 import "./LandingPage.css";
 import "./BlogPage.css";
 
@@ -88,9 +89,22 @@ function BlogFooter() {
 function BlogPage() {
   const { slug } = useParams();
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [posts, setPosts] = useState(BLOG_POSTS);
+
+  useEffect(() => {
+    let active = true;
+    getPublishedBlogs().then((loaded) => {
+      if (active && Array.isArray(loaded) && loaded.length > 0) {
+        setPosts(loaded);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   if (slug) {
-    const post = BLOG_POSTS.find((p) => p.slug === slug);
+    const post = posts.find((p) => p.slug === slug);
 
     if (!post) {
       return (
@@ -183,8 +197,8 @@ function BlogPage() {
 
   const filteredPosts =
     selectedCategory === "All"
-      ? BLOG_POSTS
-      : BLOG_POSTS.filter((p) => p.category === selectedCategory);
+      ? posts
+      : posts.filter((p) => p.category === selectedCategory);
 
   return (
     <main className="blog-page">

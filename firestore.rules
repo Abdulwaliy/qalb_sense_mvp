@@ -30,5 +30,20 @@ service cloud.firestore {
       allow read, update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
       allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
     }
+
+    function isBlogAdmin() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    match /admins/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    match /blogPosts/{slug} {
+      allow read: if resource.data.published == true || isBlogAdmin();
+      allow create, update, delete: if isBlogAdmin();
+    }
   }
 }
